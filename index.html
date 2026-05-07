@@ -290,6 +290,7 @@ const CATEGORIES = {
     {value:'operations',label:'Operations',desc:'Workflow routing, document classification, exception handling.'},
     {value:'finance',label:'Finance',desc:'Premium reconciliation, financial field extraction, anomaly detection.'},
     {value:'legal',label:'Legal',desc:'Coverage clause analysis, exclusion mapping, entity extraction.'},
+    {value:'actuarial',label:'Actuarial',desc:'Loss development, trend analysis, exposure rating, reserve adequacy from loss runs and SOVs.'},
   ],
   components: [
     {value:'classification',label:'Classification',desc:'Document type identification — ACORD form, loss run, SOV, policy, endorsement, claim file.'},
@@ -552,6 +553,41 @@ function getRecommendation(task, category, llmPolicy, posture) {
       };
     }
 
+    if (category === 'actuarial') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Deterministic actuarial calculation engine — LDF, BF, exposure rating',
+        stack:['Loss development factor (LDF) engine','Bornhuetter-Ferguson method','Trend factor library','chainladder / restools (Python)','SOV exposure rating rules'],
+        rationale:'Core actuarial calculations — loss development, trend analysis, reserve adequacy, exposure-based pricing indication — are deterministic by definition. LDF methods, Bornhuetter-Ferguson, and exposure rating formulas produce the same output given the same inputs. No LLM is needed or appropriate in the calculation layer. A rules-based engine with actuarial Python libraries (chainladder) handles the full quantitative workload.',
+        sovereignty:'No LLM. Fully deterministic. Safe for all postures. Loss run data with claimant details is Posture B — keep the calculation engine self-hosted regardless.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Deterministic calculation engine + cloud LLM for actuarial narrative and anomaly interpretation',
+        stack:['LDF / BF calculation engine','chainladder (Python)','Exposure rating rules',llmLabel+' (narrative + anomaly analysis)','Actuarial memorandum templates'],
+        rationale:'The correct actuarial architecture separates calculation from interpretation. The deterministic engine produces loss development triangles, trend indications, and reserve estimates — these are facts. The LLM layer interprets what the numbers mean: explaining unusual development patterns, flagging loss runs where a single large claim distorts trend, drafting actuarial commentary for the underwriting file. The LLM never touches the calculation; it only interprets the structured output.',
+        sovereignty:'Posture A: pass structured calculation outputs (triangles, LDF arrays, summary statistics) to the LLM — not raw loss runs with claimant PII. Loss runs are typically Posture B — verify before enabling cloud LLM on this domain.',
+        confidence:'high',
+      };
+      if (!airGapped) return {
+        verdict:'blend',
+        headline:'Deterministic calculation engine + T4 local LLM — correct posture for loss run data',
+        stack:['LDF / BF calculation engine','chainladder (Python)','Ollama + Llama 3.3 70B (local)','Actuarial memorandum templates','Carrier VPC deployment'],
+        rationale:'Posture B is the correct posture for most actuarial work — loss runs contain claimant names, claim amounts, injury codes, and sometimes medical detail. The deterministic calculation engine handles all quantitative work locally; the T4 local LLM interprets the structured outputs for narrative generation and anomaly flagging. This is the reference architecture for PHI-safe actuarial enrichment.',
+        sovereignty:'Posture B: loss run PII stays within the carrier VPC. T4 local LLM for interpretation. No data egress.',
+        confidence:'high',
+      };
+      return {
+        verdict:'build',
+        headline:'Deterministic calculation engine only — air-gapped is natural for actuarial',
+        stack:['LDF / BF calculation engine','chainladder (Python)','Exposure rating rules','Statistical summary output'],
+        rationale:'Posture C air-gapped is a natural fit for actuarial work — the quantitative core is fully deterministic and requires no LLM. Actuarial calculations produce defensible, reproducible outputs by design. The tradeoff is no narrative generation or anomaly interpretation layer; actuaries review the structured outputs directly. This is the lowest-risk architecture and often the preferred one for regulatory submissions.',
+        sovereignty:'Posture C: fully air-gapped. All calculation within isolated environment. Regulatory-grade auditability.',
+        confidence:'high',
+      };
+    }
+
     if (category === 'legal') {
       if (!hasLLM) return {
         verdict:'build',
@@ -758,6 +794,7 @@ const MATRIX_ROWS = [
   {task:'Enrichment',category:'Operations',t:'enrichment',c:'operations'},
   {task:'Enrichment',category:'Finance',t:'enrichment',c:'finance'},
   {task:'Enrichment',category:'Legal',t:'enrichment',c:'legal'},
+  {task:'Enrichment',category:'Actuarial',t:'enrichment',c:'actuarial'},
   {task:'Components',category:'Classification',t:'components',c:'classification'},
   {task:'Components',category:'Validation',t:'components',c:'validation'},
   {task:'Components',category:'Comparison / Diffing',t:'components',c:'comparison'},
