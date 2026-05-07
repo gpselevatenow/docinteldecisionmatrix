@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocIntel Pipeline Playbooks — ElevateNow</title>
+<style>
+:root {
+  --ink: #1c1917;
+  --paper: #faf9f7;
+  --surface: #ffffff;
+  --accent: #c0392b;
+  --border: #e7e2da;
+  --muted: #78716c;
+  --radius: 6px;
+  --build: #166534; --build-bg: #f0fdf4; --build-border: #86efac;
+  --buy: #1e40af;  --buy-bg: #eff6ff;  --buy-border: #93c5fd;
+  --blend: #92400e; --blend-bg: #fffbeb; --blend-border: #fcd34d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Georgia','Times New Roman',serif;background:var(--paper);color:var(--ink);line-height:1.65;font-size:16px;}
+a{color:var(--accent);}
+
+nav{border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;background:var(--surface);}
+.nav-brand{font-size:.9rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-sep{color:var(--border);}
+.nav-series{font-size:.8rem;color:var(--muted);font-family:'Courier New',monospace;}
+.nav-links{margin-left:auto;display:flex;gap:1.5rem;}
+.nav-link{font-size:.8rem;color:var(--muted);text-decoration:none;font-family:'Courier New',monospace;}
+.nav-link:hover{color:var(--accent);}
+.nav-link.active{color:var(--accent);}
+
+.hero{max-width:960px;margin:0 auto;padding:3rem 2rem 2rem;border-bottom:1px solid var(--border);}
+.hero-tag{display:inline-block;font-family:'Courier New',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);border:1px solid var(--accent);padding:.15rem .5rem;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:.75rem;}
+.hero-sub{font-size:1.05rem;color:var(--muted);max-width:640px;}
+
+.main{max-width:960px;margin:0 auto;padding:2rem;}
+
+/* TAB NAV */
+.tab-nav{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:2rem;background:var(--surface);}
+.tab-btn{flex:1;padding:.75rem .5rem;font-family:'Georgia',serif;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface);border:none;border-right:1px solid var(--border);cursor:pointer;text-align:center;line-height:1.3;transition:background .15s,color .15s;}
+.tab-btn:last-child{border-right:none;}
+.tab-btn:hover{background:var(--paper);color:var(--ink);}
+.tab-btn.active{background:var(--ink);color:#fff;}
+.tab-btn .tab-num{display:block;font-family:'Courier New',monospace;font-size:.65rem;font-weight:400;opacity:.7;margin-bottom:.15rem;}
+
+/* PIPELINE PANEL */
+.pipeline{display:none;}
+.pipeline.active{display:block;}
+
+.pipeline-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start;}
+.pipeline-title{font-size:1.3rem;font-weight:700;margin-bottom:.4rem;}
+.pipeline-desc{font-size:.9rem;color:var(--muted);line-height:1.6;}
+.pipeline-meta{display:flex;flex-direction:column;gap:.5rem;align-items:flex-end;}
+.posture-badge{font-family:'Courier New',monospace;font-size:.72rem;font-weight:700;padding:.25rem .6rem;border-radius:4px;border:1px solid var(--border);background:var(--paper);white-space:nowrap;}
+.llm-badge{font-size:.72rem;padding:.25rem .6rem;border-radius:4px;white-space:nowrap;}
+.llm-none{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+.llm-local{background:var(--blend-bg);color:var(--blend);border:1px solid var(--blend-border);}
+.llm-cloud{background:var(--buy-bg);color:var(--buy);border:1px solid var(--buy-border);}
+.stp-badge{font-size:.72rem;font-family:'Courier New',monospace;color:var(--build);background:var(--build-bg);border:1px solid var(--build-border);padding:.25rem .6rem;border-radius:4px;}
+
+/* STAGES */
+.stages{margin-bottom:2rem;}
+.stage{display:flex;gap:0;margin-bottom:0;}
+.stage-left{display:flex;flex-direction:column;align-items:center;width:40px;flex-shrink:0;}
+.stage-num{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;z-index:1;}
+.stage-line{width:2px;background:var(--border);flex:1;margin:4px 0;}
+.stage:last-child .stage-line{display:none;}
+.stage-content{flex:1;padding:0 0 1.75rem 1rem;}
+.stage-name{font-size:.95rem;font-weight:700;margin-bottom:.25rem;}
+.stage-desc{font-size:.85rem;color:#374151;line-height:1.6;margin-bottom:.6rem;}
+.stage-stack{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.4rem;}
+.chip{font-family:'Courier New',monospace;font-size:.75rem;background:var(--paper);border:1px solid var(--border);padding:.18rem .45rem;border-radius:4px;color:var(--ink);}
+.chip-warn{background:#fff7ed;border-color:#fed7aa;color:#9a3412;}
+.chip-gate{background:var(--build-bg);border-color:var(--build-border);color:var(--build);}
+.stage-note{font-size:.78rem;color:var(--muted);font-style:italic;margin-top:.25rem;}
+
+/* CONDITIONAL PATH */
+.path-split{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:.75rem;}
+.path-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;}
+.path-row{display:flex;gap:1rem;flex-wrap:wrap;}
+.path-col{flex:1;min-width:200px;}
+.path-col-label{font-size:.72rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;}
+
+/* MATRIX REFS */
+.matrix-refs{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.matrix-refs h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;}
+.ref-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.ref-chip{font-size:.75rem;background:var(--paper);border:1px solid var(--border);padding:.2rem .5rem;border-radius:4px;color:var(--ink);text-decoration:none;}
+.ref-chip:hover{border-color:var(--accent);color:var(--accent);}
+
+/* CONSTRAINTS */
+.constraints{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;}
+@media(max-width:600px){.constraints{grid-template-columns:1fr;}}
+.constraint-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;}
+.constraint-card h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;}
+.constraint-card p{font-size:.83rem;color:#374151;line-height:1.6;}
+.constraint-warn{border-left:3px solid var(--accent);}
+
+.sep{border:none;border-top:1px solid var(--border);margin:2rem 0;}
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.75rem;}
+
+footer{border-top:1px solid var(--border);text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);}
+footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://insights.elevatenow.tech" class="nav-brand">ElevateNow</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-series">DocIntel Series</span>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Decision Matrix</a>
+    <a href="pipelines.html" class="nav-link active">Pipeline Playbooks</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Pipeline Playbooks · Carrier Edition</div>
+  <h1>DocIntel Pipeline<br>Playbooks</h1>
+  <p class="hero-sub">End-to-end pipeline architectures for four high-priority insurance document intelligence use cases — stage by stage, with technology stack, data posture constraints, and key decision points.</p>
+</div>
+
+<div class="main">
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('mailroom')">
+      <span class="tab-num">01</span>Mailroom STP
+    </button>
+    <button class="tab-btn" onclick="switchTab('acord')">
+      <span class="tab-num">02</span>ACORD / EMOD Extraction
+    </button>
+    <button class="tab-btn" onclick="switchTab('claims')">
+      <span class="tab-num">03</span>Claims Context Extraction
+    </button>
+    <button class="tab-btn" onclick="switchTab('uw')">
+      <span class="tab-num">04</span>UW Documentation + Summary
+    </button>
+  </div>
+
+  <!-- ── PIPELINE 1: MAILROOM STP ───────────────────────────── -->
+  <div class="pipeline active" id="pipe-mailroom">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">Mailroom Straight-Through Processing</div>
+        <div class="pipeline-desc">Automated intake, classification, and routing of inbound insurance documents — from raw email or portal upload to indexed, typed, and queued document record. Target: 85–90% STP rate with a well-designed exception path for the remainder.</div>
+      </div>
+      <div class="pipeline-meta">
+        <span class="posture-badge">Posture A (commercial) · Posture B (claims intake)</span>
+        <span class="llm-badge llm-none">No LLM required</span>
+        <span class="stp-badge">Target STP: 85–90%</span>
+      </div>
+    </div>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">1</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Document Ingestion &amp; Format Normalization</div>
+          <div class="stage-desc">Receive documents from all inbound channels — email attachments, portal uploads, fax-to-PDF, API submissions. Normalize all formats to a canonical PDF representation. Split multi-document packages into individual files.</div>
+          <div class="stage-stack">
+            <span class="chip">Email parser (IMAP / Exchange / O365)</span>
+            <span class="chip">PyMuPDF (format normalization)</span>
+            <span class="chip">pdfplumber (page splitting)</span>
+            <span class="chip">TIFF → PDF converter</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">2</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Quality Assessment &amp; OCR Gate</div>
+          <div class="stage-desc">Score each page for scan quality (DPI, blur, skew, contrast). Digital-native PDFs with AcroForm fields bypass OCR entirely. Scanned or image-only PDFs route to the appropriate OCR tier based on quality score.</div>
+          <div class="stage-stack">
+            <span class="chip">OpenCV (DPI, blur, skew detection)</span>
+            <span class="chip">pdfplumber (AcroForm field check)</span>
+            <span class="chip">Tesseract 5 (clean scans ≥ 300 DPI)</span>
+            <span class="chip">PaddleOCR v4 (complex layouts, low-res)</span>
+          </div>
+          <div class="stage-note">Quality gate threshold: &lt;150 DPI or blur score &gt;0.7 → flag for rescan request before processing.</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">3</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Document Type Classification</div>
+          <div class="stage-desc">Identify the primary document type. Rules-based first — ACORD form numbers appear in headers and are deterministic. Novel or ambiguous formats escalate to LLM classification as a fallback only.</div>
+          <div class="stage-stack">
+            <span class="chip">Compiled regex (ACORD form numbers)</span>
+            <span class="chip">Header keyword signatures</span>
+            <span class="chip">Page count + layout heuristics</span>
+            <span class="chip chip-warn">LLM escalation (ambiguous only)</span>
+          </div>
+          <div class="stage-note">Known types: ACORD 125/126/130/140/160, loss run, SOV, policy, endorsement, IA report, broker cover letter, claim file.</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">4</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Subtype Classification</div>
+          <div class="stage-desc">Resolve the document subtype within the identified type — ACORD form variant, line of business, transaction type (new business vs. renewal vs. endorsement), and carrier-specific variants.</div>
+          <div class="stage-stack">
+            <span class="chip">ACORD form variant rules (125 GL / WC / Umbrella)</span>
+            <span class="chip">Line of business keyword rules</span>
+            <span class="chip">Transaction type classifier (new / renewal / endorsement)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">5</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Metadata Extraction (Cat 1)</div>
+          <div class="stage-desc">Extract key indexing fields from the classified document. These are deterministic structured fields — no LLM required.</div>
+          <div class="stage-stack">
+            <span class="chip">Named insured</span>
+            <span class="chip">Policy number</span>
+            <span class="chip">FEIN / NPI</span>
+            <span class="chip">Effective / expiry dates</span>
+            <span class="chip">Broker code</span>
+            <span class="chip">Claim number (claims intake)</span>
+          </div>
+          <div class="stage-stack" style="margin-top:.35rem;">
+            <span class="chip">Compiled regex (policy #, FEIN, date patterns)</span>
+            <span class="chip">pdfplumber (digital AcroForm fields)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">6</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Completeness Validation</div>
+          <div class="stage-desc">Check that all required metadata fields are present and in valid format for the classified document type. Incomplete records route to an exception queue — not to the downstream pipeline.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">Completeness schema per document type</span>
+            <span class="chip">Field format validators</span>
+            <span class="chip">Exception queue router</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">7</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Index &amp; Route</div>
+          <div class="stage-desc">Write the classified, validated document record to the document index. Trigger routing rules to assign to the correct workflow queue — UW intake, claims assignment, renewals, endorsement processing.</div>
+          <div class="stage-stack">
+            <span class="chip">Document index (MongoDB / Elasticsearch)</span>
+            <span class="chip">Routing rules engine</span>
+            <span class="chip">Queue assignment (UW / Claims / Renewals / Endorsements)</span>
+            <span class="chip">SLA timer start</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-refs">
+      <h3>Matrix Components Used</h3>
+      <div class="ref-chips">
+        <a href="index.html" class="ref-chip">Cat 1 — Structured Fields</a>
+        <a href="index.html" class="ref-chip">Cat 5 — Form Structure</a>
+        <a href="index.html" class="ref-chip">Classification</a>
+        <a href="index.html" class="ref-chip">Validation</a>
+      </div>
+    </div>
+
+    <div class="constraints">
+      <div class="constraint-card constraint-warn">
+        <h4>Exception Path (10–15%)</h4>
+        <p>Low-confidence classification, missing required metadata, and quality-failed documents route to a human review queue. The exception queue design is as important as the STP pipeline — poorly designed exception handling becomes the operational bottleneck.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>Posture Split</h4>
+        <p>Commercial submissions are Posture A. Claims intake documents (which may include medical attachments, police reports) should be treated as Posture B. Build the pipeline with posture tagging per document type from step 3 onward.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIPELINE 2: ACORD / EMOD ───────────────────────────── -->
+  <div class="pipeline" id="pipe-acord">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">Single ACORD / EMOD Extraction</div>
+        <div class="pipeline-desc">Deterministic structured extraction from ACORD commercial application forms (125, 126, 130, 140) and workers' compensation EMOD worksheets. Fully LLM-free — Cat 1 and Cat 5 only. Output is a structured JSON record ready for the submission or rating system.</div>
+      </div>
+      <div class="pipeline-meta">
+        <span class="posture-badge">Posture A</span>
+        <span class="llm-badge llm-none">No LLM — fully deterministic</span>
+      </div>
+    </div>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">1</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Document Condition Detection</div>
+          <div class="stage-desc">Determine whether the ACORD form is a digital PDF with AcroForm fields or a scanned/image-only PDF. This determines which extraction path to follow — they have very different accuracy profiles and tool requirements.</div>
+          <div class="stage-stack">
+            <span class="chip">pdfplumber (AcroForm field detection)</span>
+            <span class="chip">PyMuPDF (PDF metadata + page analysis)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">2</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Path-Dependent Extraction</div>
+          <div class="stage-desc">Two parallel paths based on document condition. Digital path achieves near-100% accuracy. Scan path accuracy depends on scan quality and form complexity.</div>
+          <div class="path-split">
+            <div class="path-label">Path A — Digital PDF (AcroForm fields present)</div>
+            <div class="path-row">
+              <div class="path-col">
+                <div class="path-col-label">Stack</div>
+                <div class="stage-stack">
+                  <span class="chip">pdfplumber (direct field read)</span>
+                  <span class="chip">PyMuPDF (AcroForm values)</span>
+                </div>
+              </div>
+              <div class="path-col">
+                <div class="path-col-label">Accuracy</div>
+                <div style="font-size:.83rem;color:var(--build);font-weight:700;">Near-100% — no OCR involved</div>
+              </div>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">Path B — Scanned / Image PDF</div>
+            <div class="path-row">
+              <div class="path-col">
+                <div class="path-col-label">Stack</div>
+                <div class="stage-stack">
+                  <span class="chip">Tesseract 5 / PaddleOCR v4</span>
+                  <span class="chip">Form structure detection (Cat 5)</span>
+                  <span class="chip">Field position mapping</span>
+                </div>
+              </div>
+              <div class="path-col">
+                <div class="path-col-label">Accuracy</div>
+                <div style="font-size:.83rem;color:var(--blend);font-weight:700;">90–96% (clean scan) · 75–85% (degraded)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">3</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Structured Field Extraction (Cat 1)</div>
+          <div class="stage-desc">Extract all deterministic structured fields from the ACORD form. Each field type has a compiled regex pattern and value normalizer.</div>
+          <div class="stage-stack">
+            <span class="chip">Named insured + DBA</span>
+            <span class="chip">FEIN</span>
+            <span class="chip">SIC code</span>
+            <span class="chip">Mailing + location address</span>
+            <span class="chip">Effective / expiry dates</span>
+            <span class="chip">Coverage limits</span>
+            <span class="chip">Deductibles</span>
+            <span class="chip">Total premium</span>
+            <span class="chip">Years in business</span>
+            <span class="chip">Annual revenue</span>
+            <span class="chip">Employee count</span>
+          </div>
+          <div class="stage-stack" style="margin-top:.35rem;">
+            <span class="chip">Compiled regex per field type</span>
+            <span class="chip">Value normalizers (date, currency, address)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">4</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Categorical Extraction (Cat 2)</div>
+          <div class="stage-desc">Resolve ontology-anchored categoricals from the extracted SIC code and business description. No LLM — crosswalk tables and ontology index handle this deterministically.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">SIC → NAICS crosswalk</span>
+            <span class="chip chip-gate">Industry vertical mapping</span>
+            <span class="chip">Business description keyword classifier</span>
+            <span class="chip">Class of business ontology index</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">5</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">EMOD Table Parsing (WC forms only)</div>
+          <div class="stage-desc">Parse the experience modification worksheet when present. The EMOD table has a predictable column structure — prior policy years, primary losses, excess losses, expected losses, and the computed mod factor. Validate the mod factor is consistent with the actuarial formula.</div>
+          <div class="stage-stack">
+            <span class="chip">Cat 5 table parser</span>
+            <span class="chip">Prior year columns (3–5 years)</span>
+            <span class="chip">Primary loss extraction</span>
+            <span class="chip">Excess loss extraction</span>
+            <span class="chip">Expected loss extraction</span>
+            <span class="chip">Mod factor (computed + stated)</span>
+          </div>
+          <div class="stage-note">Mod factor validation: flag if extracted factor is outside 0.50–2.00 range or inconsistent with loss inputs.</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">6</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Validation</div>
+          <div class="stage-desc">Apply field-level and cross-field validation rules. Failures route to a human correction queue — do not pass invalid records downstream.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">Required field completeness check</span>
+            <span class="chip">Date logic (effective &lt; expiry)</span>
+            <span class="chip">Deductible &lt; limit check</span>
+            <span class="chip">FEIN format validator (XX-XXXXXXX)</span>
+            <span class="chip">SIC code valid range check</span>
+            <span class="chip">EMOD range check (0.50–2.00)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">7</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Structured Output</div>
+          <div class="stage-desc">Emit a validated JSON record conforming to the submission intake schema. The record includes all extracted fields, extraction confidence per field, the source path (digital vs. scan), and EMOD fields if applicable.</div>
+          <div class="stage-stack">
+            <span class="chip">JSON schema validator</span>
+            <span class="chip">Per-field confidence scores</span>
+            <span class="chip">Extraction path tag (digital / scan)</span>
+            <span class="chip">API output → submission system / GKR pipeline</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-refs">
+      <h3>Matrix Components Used</h3>
+      <div class="ref-chips">
+        <a href="index.html" class="ref-chip">Cat 1 — Structured Fields</a>
+        <a href="index.html" class="ref-chip">Cat 2 — Ontology Categoricals</a>
+        <a href="index.html" class="ref-chip">Cat 5 — Form Structure</a>
+        <a href="index.html" class="ref-chip">Validation</a>
+      </div>
+    </div>
+
+    <div class="constraints">
+      <div class="constraint-card constraint-warn">
+        <h4>Digital vs. Scan Accuracy Gap</h4>
+        <p>Digital AcroForm PDFs produce near-100% extraction accuracy. Scanned forms drop to 90–96% on clean scans and 75–85% on degraded input. Carriers should report submission quality rates to brokers and incentivize digital submission formats.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>EMOD Source of Truth</h4>
+        <p>Always extract both the stated mod factor and the calculated mod factor from the worksheet inputs. Discrepancies between the two are a data quality flag that should route to the underwriter — not be silently resolved by the pipeline.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIPELINE 3: CLAIMS CONTEXT EXTRACTION ─────────────── -->
+  <div class="pipeline" id="pipe-claims">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">Context Extraction for Conversational GenAI — Claims</div>
+        <div class="pipeline-desc">Prepare heterogeneous claims file documents (FNOL, police reports, IA reports, medical records, adjuster notes) as structured, redacted, retrievable context for a conversational AI interface. Enables adjusters to ask natural language questions about a claim grounded in the actual file.</div>
+      </div>
+      <div class="pipeline-meta">
+        <span class="posture-badge">Posture B — PHI present</span>
+        <span class="llm-badge llm-local">T4 Local LLM (VPC)</span>
+      </div>
+    </div>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">1</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Redaction — Must Be First</div>
+          <div class="stage-desc">Strip all PII and PHI before any other processing or LLM contact. This is not optional — claims files contain claimant names, SSN, medical record numbers, DOB, and provider identifiers. Redaction produces an audit log of what was removed and why, required for HIPAA compliance documentation.</div>
+          <div class="stage-stack">
+            <span class="chip chip-warn">MUST run before all other stages</span>
+            <span class="chip">Compiled regex (SSN, TIN, DOB, phone, email, MRN)</span>
+            <span class="chip">spaCy NER (PERSON, ORG, GPE)</span>
+            <span class="chip">Medical record number patterns</span>
+            <span class="chip">Redaction audit log (HIPAA evidence)</span>
+            <span class="chip">Determinism validator (same input → same output)</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">2</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Document Type Classification</div>
+          <div class="stage-desc">A single claims file package may contain 8–15 distinct document types. Classify each document separately — each type requires a different extraction schema in the next stage.</div>
+          <div class="stage-stack">
+            <span class="chip">FNOL form classifier</span>
+            <span class="chip">Police report classifier</span>
+            <span class="chip">IA report classifier</span>
+            <span class="chip">Medical record classifier</span>
+            <span class="chip">Adjuster note classifier</span>
+            <span class="chip">Coverage letter classifier</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">3</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Type-Aware Extraction</div>
+          <div class="stage-desc">Each document type runs through its own extraction schema. This is the critical difference from generic RAG — insurance-specific extraction produces structured fields alongside narrative, enabling both precise lookup and semantic retrieval.</div>
+          <div class="path-split">
+            <div class="path-label">FNOL → Cat 1 + Cat 3</div>
+            <div class="stage-stack">
+              <span class="chip">Date of loss</span>
+              <span class="chip">Claim number</span>
+              <span class="chip">Policy number</span>
+              <span class="chip">Reported injuries (Cat 1)</span>
+              <span class="chip">Loss narrative (Cat 3 verbatim)</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">Police Report → Cat 3</div>
+            <div class="stage-stack">
+              <span class="chip">Verbatim narrative capture</span>
+              <span class="chip">Violation / charge codes (Cat 2)</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">IA Report → Cat 3 + Cat 4</div>
+            <div class="stage-stack">
+              <span class="chip">Damage description (Cat 3)</span>
+              <span class="chip">Causation assessment (Cat 4)</span>
+              <span class="chip">Repair scope interpretation (Cat 4)</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">Medical Records (post-redaction) → Cat 1</div>
+            <div class="stage-stack">
+              <span class="chip">ICD-10 diagnosis codes</span>
+              <span class="chip">CPT treatment codes</span>
+              <span class="chip">Treatment dates</span>
+              <span class="chip">Provider specialty</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">4</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Insurance-Specific Chunking</div>
+          <div class="stage-desc">Segment documents by logical section and event timeline — not arbitrary token windows. A police report sections differently from an IA report. Event-aligned chunks enable timeline-based retrieval: "what happened on date X?" retrieves the right chunk regardless of which document it came from.</div>
+          <div class="stage-stack">
+            <span class="chip">Document-type-aware section boundary detection</span>
+            <span class="chip">Event timeline parser (dates, sequences)</span>
+            <span class="chip">Cross-document event alignment</span>
+            <span class="chip">Chunk metadata tagging (doc type, section, date)</span>
+          </div>
+          <div class="stage-note">Do not use generic text splitters (LangChain RecursiveCharacterTextSplitter etc.) — they cut across section boundaries and produce incoherent chunks for insurance content.</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">5</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Claim Context Assembly</div>
+          <div class="stage-desc">Combine all extracted structured fields and narrative chunks into a single per-claim context object. This is the queryable representation of the entire claim file.</div>
+          <div class="stage-stack">
+            <span class="chip">Structured field store (per claim)</span>
+            <span class="chip">Narrative chunk index (per claim)</span>
+            <span class="chip">Cross-document event timeline</span>
+            <span class="chip">Document inventory manifest</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">6</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Retrieval Index (Per Claim)</div>
+          <div class="stage-desc">Build a searchable index scoped to the claim. Local vector store or structured search — Posture B prohibits cloud vector databases (Pinecone, Weaviate cloud, etc.).</div>
+          <div class="stage-stack">
+            <span class="chip">Local vector store (Qdrant local / Chroma)</span>
+            <span class="chip">Structured field search layer</span>
+            <span class="chip">Per-claim namespace isolation</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">7</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Query-Time Retrieval + Generation</div>
+          <div class="stage-desc">Adjuster asks a natural language question. The retrieval layer fetches relevant structured fields and narrative chunks. The T4 local LLM generates a grounded answer with source attribution — identifying which document and section each fact came from.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">Ollama + Llama 3.3 70B (local, Posture B)</span>
+            <span class="chip">Retrieval layer (structured + semantic)</span>
+            <span class="chip">Governed prompt template</span>
+            <span class="chip">Source attribution (doc type + section)</span>
+            <span class="chip">Response formatter</span>
+          </div>
+          <div class="stage-note">The LLM retrieves and synthesizes — it does not generate coverage positions. Coverage determination stays in the rules layer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-refs">
+      <h3>Matrix Components Used</h3>
+      <div class="ref-chips">
+        <a href="index.html" class="ref-chip">Cat 1 — Structured Fields</a>
+        <a href="index.html" class="ref-chip">Cat 3 — Verbatim Narrative</a>
+        <a href="index.html" class="ref-chip">Cat 4 — Interpretation &amp; Synthesis</a>
+        <a href="index.html" class="ref-chip">Redaction</a>
+        <a href="index.html" class="ref-chip">Classification</a>
+        <a href="index.html" class="ref-chip">Claims Enrichment</a>
+      </div>
+    </div>
+
+    <div class="constraints">
+      <div class="constraint-card constraint-warn">
+        <h4>Redaction Must Be First — No Exceptions</h4>
+        <p>The LLM must never see un-redacted claimant PII or PHI. Redaction is the first stage in the pipeline, not an optional pre-processing step. Any architecture that passes raw claims documents to an LLM before redaction is non-compliant with HIPAA and most carrier data governance policies.</p>
+      </div>
+      <div class="constraint-card constraint-warn">
+        <h4>No Generic Chunking</h4>
+        <p>Arbitrary token-window chunking (500 tokens, 20% overlap) cuts across section boundaries in police reports, IA reports, and medical records, producing incoherent retrieval. Insurance-specific chunking by document section and event timeline is required for reliable retrieval quality.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>Coverage Determination Boundary</h4>
+        <p>The conversational AI answers factual questions about the claim file. It does not determine coverage, set reserves, or make liability decisions. These remain with the adjuster. The system prompt must explicitly prohibit coverage assertions.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>Local Infrastructure Requirement</h4>
+        <p>Posture B requires Llama 3.3 70B via Ollama within the carrier VPC. GPU requirement: 2× A100 80GB minimum. Local vector store (Qdrant or Chroma) replaces cloud vector database services. Plan infrastructure procurement timeline before committing to delivery date.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PIPELINE 4: UW DOCUMENTATION + SUMMARY ────────────── -->
+  <div class="pipeline" id="pipe-uw">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">UW Documentation Context Extraction + Summarization</div>
+        <div class="pipeline-desc">Extract and structure all documents in a commercial submission package — ACORD application, loss run, SOV, inspection report, broker cover letter — then run GKR eligibility gates and LLM exposure interrogation to produce a governed, chunk-traced underwriting summary.</div>
+      </div>
+      <div class="pipeline-meta">
+        <span class="posture-badge">Posture A (commercial submissions)</span>
+        <span class="llm-badge llm-cloud">Non-Chinese LLM (cloud)</span>
+      </div>
+    </div>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">1</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Submission Package Classification</div>
+          <div class="stage-desc">Identify each document type in the submission package. A typical commercial submission contains 4–8 distinct document types, each requiring a different extraction schema.</div>
+          <div class="stage-stack">
+            <span class="chip">ACORD application classifier (125 / 126 / 130 / 140)</span>
+            <span class="chip">Loss run identifier (column structure, date pattern)</span>
+            <span class="chip">SOV identifier (COPE field presence)</span>
+            <span class="chip">Inspection report classifier</span>
+            <span class="chip">Broker cover letter classifier</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">2</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Type-Aware Extraction</div>
+          <div class="stage-desc">Each document type runs its own extraction schema — same principle as claims but optimized for underwriting content types.</div>
+          <div class="path-split">
+            <div class="path-label">ACORD Application → Cat 1 + Cat 5</div>
+            <div class="stage-stack">
+              <span class="chip">Named insured, FEIN, SIC</span>
+              <span class="chip">Operations description (Cat 3)</span>
+              <span class="chip">Locations, limits, deductibles</span>
+              <span class="chip">Form structure detection (Cat 5)</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">Loss Run → Cat 1 + Cat 5 (table)</div>
+            <div class="stage-stack">
+              <span class="chip">Claim dates, amounts, types</span>
+              <span class="chip">Open vs. closed status</span>
+              <span class="chip">Large loss identification (&gt;$100K)</span>
+              <span class="chip">Table structure detection (Cat 5)</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">SOV → Cat 1 COPE + Cat 5</div>
+            <div class="stage-stack">
+              <span class="chip">Construction type</span>
+              <span class="chip">Occupancy classification</span>
+              <span class="chip">Protection class</span>
+              <span class="chip">Building value / TIV</span>
+              <span class="chip">Year built</span>
+            </div>
+          </div>
+          <div class="path-split">
+            <div class="path-label">Inspection Report → Cat 3 + Cat 4</div>
+            <div class="stage-stack">
+              <span class="chip">Condition narrative (Cat 3)</span>
+              <span class="chip">Deficiency findings (Cat 4)</span>
+              <span class="chip">Recommendation interpretation (Cat 4)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">3</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">GKR Three-Gate Eligibility — Runs Before LLM</div>
+          <div class="stage-desc">The deterministic eligibility pipeline runs on the extracted structured fields before any LLM contact. Gate 1 short-circuits on hard exclusions. Gates 2 and 3 resolve appetite and operations. The LLM only sees submissions that have passed or conditionally passed the gates.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">Gate 1 — Hard Exclusions (SIC → exclusion matrix)</span>
+            <span class="chip chip-gate">Gate 2 — Vertical Appetite (SIC → appetite chunks)</span>
+            <span class="chip chip-gate">Gate 3 — Operations Exclusion (keyword match on description)</span>
+          </div>
+          <div class="stage-note">Gate 1 DECLINE = pipeline terminates. No LLM cost incurred on ineligible submissions. Eligibility verdict + confidence written to decision trace.</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">4</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Context Assembly</div>
+          <div class="stage-desc">Combine gate outputs, structured fields, and narrative chunks into a governed context window for the LLM. The context is curated — not the raw documents. This limits token cost, reduces hallucination surface, and ensures the LLM operates on verified extracted data.</div>
+          <div class="stage-stack">
+            <span class="chip">Gate verdict + confidence scores</span>
+            <span class="chip">Structured fields (insured, SIC, operations, limits)</span>
+            <span class="chip">Loss run summary (frequency, severity, large losses)</span>
+            <span class="chip">SOV summary (TIV, construction mix, protection class)</span>
+            <span class="chip">Inspection findings narrative</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">5</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">UW-CP-001 Exposure Interrogation</div>
+          <div class="stage-desc">The LLM analyzes the assembled context against the 9-pattern UW-CP-001 cognitive pattern. Each pattern probes a distinct exposure dimension. The LLM's scope is constrained by the governed prompt template — it cannot go beyond the 9 patterns or assert facts not in the context.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">Claude / GPT-4 (governed prompt)</span>
+            <span class="chip">Premises &amp; operations liability</span>
+            <span class="chip">Products &amp; completed operations</span>
+            <span class="chip">Contractual liability</span>
+            <span class="chip">Professional / E&amp;O exposure</span>
+            <span class="chip">Property concentration</span>
+            <span class="chip">Catastrophe exposure</span>
+            <span class="chip">Loss history analysis</span>
+            <span class="chip">Management / governance risk</span>
+            <span class="chip">Regulatory / compliance exposure</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">6</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">Summary Generation</div>
+          <div class="stage-desc">Generate a structured underwriting summary: eligibility verdict, top exposure flags, loss history narrative, open questions for the underwriter. Every assertion in the summary traces to a chunk ID or gate output — no unsupported claims.</div>
+          <div class="stage-stack">
+            <span class="chip">Eligibility verdict + confidence</span>
+            <span class="chip">Top 3 exposure flags (with chunk citations)</span>
+            <span class="chip">Loss history narrative</span>
+            <span class="chip">Open questions for underwriter</span>
+            <span class="chip">Recommended next steps</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-left"><div class="stage-num">7</div><div class="stage-line"></div></div>
+        <div class="stage-content">
+          <div class="stage-name">GKR Format Output</div>
+          <div class="stage-desc">Emit the final response in GKR format — the standard agent response schema used across the platform. The decision trace makes every gate result, LLM input, chunk citation, and confidence score auditable.</div>
+          <div class="stage-stack">
+            <span class="chip chip-gate">response — flat markdown narrative</span>
+            <span class="chip chip-gate">decision_trace — gate results, verdict, confidence</span>
+            <span class="chip">chunk_ids — cited knowledge sources</span>
+            <span class="chip">version — cognitive pattern version (UW-CP-001 v2.0)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-refs">
+      <h3>Matrix Components Used</h3>
+      <div class="ref-chips">
+        <a href="index.html" class="ref-chip">Cat 1 — Structured Fields</a>
+        <a href="index.html" class="ref-chip">Cat 3 — Verbatim Narrative</a>
+        <a href="index.html" class="ref-chip">Cat 4 — Interpretation &amp; Synthesis</a>
+        <a href="index.html" class="ref-chip">Cat 5 — Form Structure</a>
+        <a href="index.html" class="ref-chip">Underwriting Enrichment</a>
+        <a href="index.html" class="ref-chip">Classification</a>
+        <a href="index.html" class="ref-chip">Generation</a>
+        <a href="index.html" class="ref-chip">Audit / Compliance</a>
+      </div>
+    </div>
+
+    <div class="constraints">
+      <div class="constraint-card constraint-warn">
+        <h4>GKR Gates Must Run First</h4>
+        <p>The three-gate deterministic eligibility pipeline always runs before the LLM. This eliminates LLM cost on clearly ineligible submissions (Gate 1 DECLINE short-circuits) and ensures the LLM never produces a positive exposure narrative for an ineligible risk.</p>
+      </div>
+      <div class="constraint-card constraint-warn">
+        <h4>Context Not Raw Documents</h4>
+        <p>The LLM receives curated structured context — not raw document content. Passing raw ACORD PDFs to an LLM is expensive, slow, and produces lower-quality outputs than passing well-structured extracted fields. Extract first, then govern the context window.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>GKR Format Required</h4>
+        <p>All outputs must conform to GKR format: a flat markdown response and a structured decision_trace. Free-form LLM output without a decision trace is not auditable and cannot be used for underwriting decisions. This is a hard requirement, not a preference.</p>
+      </div>
+      <div class="constraint-card">
+        <h4>Non-Chinese LLM Policy</h4>
+        <p>Commercial submissions contain financially sensitive business information (revenue, employee count, operations detail). Apply a non-Chinese LLM policy as a default — use Anthropic Claude or OpenAI GPT-4. The Insights site decision matrix provides the full provider reference.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  ElevateNow DocIntel Series &nbsp;·&nbsp; <a href="index.html">Decision Matrix</a> &nbsp;·&nbsp; <a href="https://insights.elevatenow.tech">insights.elevatenow.tech</a>
+</footer>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.pipeline').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pipe-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
