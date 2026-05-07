@@ -122,7 +122,7 @@ footer a{color:var(--muted);}
 <div class="hero">
   <div class="hero-tag">Decision Framework · Carrier Edition</div>
   <h1>Insurance DocIntel<br>Decision Matrix</h1>
-  <p class="hero-sub">Configure your task, LLM policy, and data posture to receive a prescriptive Buy&nbsp;/&nbsp;Build&nbsp;/&nbsp;Blend recommendation with a justified technology stack — across extraction and domain enrichment.</p>
+  <p class="hero-sub">Configure your task, LLM policy, and data posture to receive a prescriptive Buy&nbsp;/&nbsp;Build&nbsp;/&nbsp;Blend recommendation with a justified technology stack — across extraction, domain enrichment, and DocIntel pipeline components.</p>
 </div>
 
 <div class="main">
@@ -136,8 +136,9 @@ footer a{color:var(--muted);}
           <option value="">— Select —</option>
           <option value="extraction">Document Extraction</option>
           <option value="enrichment">Domain Enrichment</option>
+          <option value="components">DocIntel Components</option>
         </select>
-        <div class="field-desc">Extraction = pull structured data from documents. Enrichment = decision support on top of extracted data.</div>
+        <div class="field-desc">Extraction = pull structured data. Enrichment = decision support. Components = pipeline capabilities (classification, validation, redaction, etc.).</div>
       </div>
       <div class="field">
         <label for="category">Category / Domain</label>
@@ -290,6 +291,14 @@ const CATEGORIES = {
     {value:'finance',label:'Finance',desc:'Premium reconciliation, financial field extraction, anomaly detection.'},
     {value:'legal',label:'Legal',desc:'Coverage clause analysis, exclusion mapping, entity extraction.'},
   ],
+  components: [
+    {value:'classification',label:'Classification',desc:'Document type identification — ACORD form, loss run, SOV, policy, endorsement, claim file.'},
+    {value:'validation',label:'Validation',desc:'Completeness and consistency checks — required fields, range rules, cross-field conflicts.'},
+    {value:'comparison',label:'Comparison / Diffing',desc:'Delta detection between document versions — renewal vs. expiring, endorsement vs. base policy.'},
+    {value:'redaction',label:'Redaction',desc:'PII / PHI removal — SSN, TIN, medical record numbers — before downstream LLM processing.'},
+    {value:'generation',label:'Generation',desc:'Draft output documents — coverage summaries, declination letters, acknowledgment letters.'},
+    {value:'audit',label:'Audit / Compliance',desc:'Check agent outputs against carrier guidelines, regulatory requirements, and model governance rules.'},
+  ],
 };
 
 function onTaskChange() {
@@ -313,7 +322,9 @@ function onTaskChange() {
   });
   catDesc.textContent = task === 'extraction'
     ? 'Five categories based on output type and LLM requirement.'
-    : 'Five insurance domains requiring decision support beyond raw extraction.';
+    : task === 'enrichment'
+    ? 'Five insurance domains requiring decision support beyond raw extraction.'
+    : 'Six pipeline capabilities that sit alongside extraction and enrichment.';
   onCompute();
 }
 
@@ -569,6 +580,147 @@ function getRecommendation(task, category, llmPolicy, posture) {
     }
   }
 
+  if (task === 'components') {
+
+    if (category === 'classification') {
+      if (!hasLLM || !cloudOK) return {
+        verdict:'build',
+        headline:'Rules-based document type classifier — ACORD form numbers are deterministic',
+        stack:['Form number regex (ACORD 125, 140, 160 …)','Header keyword signatures','Page count + layout heuristics','File metadata parser'],
+        rationale:'Document type identification is a finite-set problem for insurance. ACORD form numbers appear in headers and footers; loss run layouts follow predictable column patterns; SOVs are identified by COPE field presence. A rules-based classifier covers 90%+ of carrier document types with zero LLM dependency. Novel or ambiguous document types route to a human review queue.',
+        sovereignty:'Rules-only. No data egress. Safe for all postures.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'Rules classifier primary + LLM escalation for novel or ambiguous document types',
+        stack:['Rules-based classifier (primary)','Form number / layout signatures',llmLabel+' (escalation)','Unknown-type queue'],
+        rationale:'The rules classifier handles known document types deterministically. The LLM escalation layer handles novel formats — non-standard loss runs, bespoke carrier forms, foreign-language documents — that fall outside the rules vocabulary. This keeps the LLM out of the critical path for 90%+ of volume while handling the long tail gracefully.',
+        sovereignty:'Posture A: document metadata and layout snippets passed to LLM for classification — not full document content. Minimizes exposure surface.',
+        confidence:'high',
+      };
+    }
+
+    if (category === 'validation') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Rules-based completeness and consistency gate',
+        stack:['Required field presence checks','Value range validators','Cross-field consistency rules','FNOL / submission completeness schema'],
+        rationale:'Validation is fundamentally a rules problem: required fields must be present, values must be in range, cross-field relationships must be consistent (effective date before expiration date, deductible less than limit). Rules-based validation is deterministic, auditable, and sufficient for structured document types. Define schemas per document type — ACORD 125 completeness, FNOL completeness, SOV completeness.',
+        sovereignty:'No LLM. Fully deterministic. Safe for all postures.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Rules validation + LLM semantic consistency check',
+        stack:['Required field / range rules (primary)',llmLabel+' (semantic consistency)','Business description ↔ NAICS consistency','Loss history ↔ exposure alignment'],
+        rationale:'Beyond structural rules, semantic consistency checks require reasoning: does the business description align with the stated NAICS code? Does the loss history pattern match the exposure profile? Does the coverage requested match the risk class? These questions defeat rule-based systems but are well-suited to a narrow, grounded LLM call against the validated structured fields.',
+        sovereignty:'Posture A: pass structured extracted fields — not raw documents — to the LLM for semantic validation. Limits PII exposure.',
+        confidence:'medium',
+      };
+      return {
+        verdict:'build',
+        headline:'Rules validation — semantic checks deferred to human review at this posture',
+        stack:['Required field / range rules','Cross-field consistency rules','Semantic exception queue (human review)'],
+        rationale:`Posture ${posture} prohibits cloud LLM calls. The structural rules validation is fully sufficient for the deterministic checks. Semantic consistency questions (description ↔ NAICS alignment, loss pattern ↔ exposure) route to a human review queue. Invest in expanding rule coverage to reduce human queue volume over time.`,
+        sovereignty:`Posture ${posture}: no external API calls. All validation within carrier VPC.`,
+        confidence:'high',
+      };
+    }
+
+    if (category === 'comparison') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Structural diff engine — field-level delta detection',
+        stack:['Field-level delta engine','Structured document diff','Change summary rules','Version-tagged output schema'],
+        rationale:'Comparison without LLM is a structural diff problem: field A in version 1 vs. field A in version 2. This is fully achievable with a deterministic diff engine for structured fields (premium changed from $X to $Y, deductible increased from $A to $B, coverage added/removed). The gap is semantic interpretation — what does this change mean for the insured? — which requires LLM.',
+        sovereignty:'Rules-only. Safe for all postures. No LLM infrastructure required.',
+        confidence:'medium',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Structural diff engine + cloud LLM for semantic interpretation of changes',
+        stack:['Field-level delta engine',llmLabel+' (change interpretation)','Coverage impact analysis','Renewal / endorsement comparison templates'],
+        rationale:'The diff engine identifies what changed; the LLM interprets what those changes mean for coverage, risk, and pricing. "Deductible increased from $10K to $50K" is a fact; "this shifts significant frequency-layer exposure to the insured and reduces net premium appropriately" is an interpretation. The blend is the right architecture — neither alone is sufficient for renewal review or endorsement analysis.',
+        sovereignty:'Posture A: pass structured delta output to LLM, not raw policy documents. Reduces payload size and PHI surface.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'Structural diff + T4 local LLM for PHI-safe semantic interpretation',
+        stack:['Field-level delta engine','Ollama + Llama 3.3 70B (local)','Coverage impact templates','Carrier VPC deployment'],
+        rationale:`Posture ${posture}: policy documents may contain policyholder PII. The blend architecture holds — diff engine for structural changes, T4 local LLM for semantic interpretation. Llama 3.3 70B performs well on structured policy comparison tasks. The local deployment means policy content never leaves the carrier VPC.`,
+        sovereignty:`Posture ${posture}: structural diff and LLM interpretation within carrier VPC. No data egress.`,
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'redaction') {
+      return {
+        verdict:'build',
+        headline:'T2 regex + spaCy NER — never use LLM for redaction',
+        stack:['Compiled regex (SSN, TIN, DOB, phone, email)','spaCy NER (PERSON, ORG, GPE)','Medical record number patterns','Redaction audit log','Determinism validation'],
+        rationale:'Redaction is always Build, regardless of LLM policy. The reason is circular: you cannot send PHI to a cloud LLM to redact it — that defeats the purpose of redaction. The correct stack is T2 regex for structured PII patterns (SSN: \d{3}-\d{2}-\d{4}, TIN, DOB, medical record numbers) plus spaCy NER for named entities (claimant names, provider names, employer names). Redaction outputs must be deterministic and produce an audit log of what was redacted and why — required for HIPAA compliance documentation.',
+        sovereignty:'Build always. This capability is the prerequisite for moving documents from Posture B to Posture A for downstream LLM processing. LLM policy and posture are irrelevant — redaction is always self-hosted.',
+        confidence:'high',
+      };
+    }
+
+    if (category === 'generation') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Template fill only — structured field substitution, no narrative generation',
+        stack:['Document template engine','Field substitution rules','Structured output formatter','PDF / DOCX renderer'],
+        rationale:'Document generation without LLM is limited to filling pre-defined templates with structured field values: "Dear [Policyholder Name], your renewal premium for policy [Policy Number] effective [Date] is [Premium]." This is appropriate for acknowledgment letters, coverage confirmation notices, and data-complete standard forms. Any task requiring original prose — declination rationale, coverage summary narrative, claims correspondence — requires LLM.',
+        sovereignty:'No LLM. Template-only. Safe for all postures. Accept significant scope limitation.',
+        confidence:'medium',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Governed templates + cloud LLM for carrier-voice narrative generation',
+        stack:['Output schema / template framework',llmLabel+' (narrative generation)','Governed prompt templates','Hallucination guardrails','Human review gate (before send)'],
+        rationale:'The blend architecture uses governed prompt templates to constrain the LLM to the carrier\'s required scope (what to include, what to never assert) and passes structured extracted data as grounding context. The LLM generates the prose; the template enforces the structure. A mandatory human review gate before any generated document is sent to an insured is non-negotiable — LLM generation is drafting, not final output.',
+        sovereignty:'Posture A: pass structured data to LLM, not raw source documents. Generated output must be reviewed by a licensed practitioner before use in coverage or claims decisions.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'Governed templates + T4 local LLM for PHI-safe document drafting',
+        stack:['Output schema / template framework','Ollama + Llama 3.3 70B (local)','Governed prompt templates','Human review gate (before send)','Carrier VPC deployment'],
+        rationale:`Posture ${posture}: documents may reference PHI (claimant details, medical findings in WC letters). T4 local LLM keeps generation within the carrier VPC. Llama 3.3 70B produces acceptable prose for structured insurance correspondence. Human review gate is mandatory before any generated content is sent externally — this is a governance requirement, not a quality hedge.`,
+        sovereignty:`Posture ${posture}: generation within carrier VPC. No drafts leave the network perimeter before human review.`,
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'audit') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Rules-based compliance audit — decision trace, confidence thresholds, required fields',
+        stack:['Decision trace validator','Confidence threshold rules','Required field audit (GKR format)','NAIC model governance checks','Audit log writer'],
+        rationale:'Structural audit — did the agent include a decision trace? Is confidence above the carrier threshold? Are all required output fields present? Were the correct knowledge chunks cited? — is a rules problem. Every agent output in the GKR format carries a decision_trace; the audit layer validates its presence, completeness, and internal consistency. This covers the majority of NAIC Model Bulletin AI (2023) compliance requirements.',
+        sovereignty:'Rules-only audit. No LLM required. Safe for all postures. This is the correct baseline for governance documentation.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Rules audit + LLM meta-evaluation of output quality and reasoning integrity',
+        stack:['Structural audit rules (primary)',llmLabel+' (semantic quality eval)','Reasoning chain validator','Bias / drift monitor','Model card evidence collector'],
+        rationale:'Beyond structural compliance, carriers increasingly need semantic audit: is the LLM\'s reasoning internally consistent? Does the exposure analysis align with the eligibility decision? Is there evidence of demographic bias in CONDITIONAL vs. DECLINE patterns? A secondary LLM evaluator can perform this meta-evaluation against governed rubrics — essentially an AI auditing another AI. This addresses NAIC Model Bulletin AI requirements for validation reports and drift monitoring.',
+        sovereignty:'Posture A: audit layer receives structured agent outputs (decision traces, confidence scores) — not raw source documents. Minimal PII exposure.',
+        confidence:'medium',
+      };
+      return {
+        verdict:'build',
+        headline:'Rules-based structural audit — LLM meta-evaluation deferred at this posture',
+        stack:['Structural audit rules','Decision trace validator','Confidence threshold checks','NAIC governance log','Human audit review for semantic gaps'],
+        rationale:`Posture ${posture}: the rules-based structural audit covers the mandatory compliance layer — decision trace presence, confidence thresholds, required field completeness, chunk citation validation. Semantic quality evaluation (reasoning consistency, bias detection) routes to a human audit review cadence. Document this boundary explicitly in your NAIC Model Bulletin governance package — regulators accept manual review for semantic audit when structural audit is automated.`,
+        sovereignty:`Posture ${posture}: all audit processing within carrier VPC. Audit logs are carrier-controlled evidence for SOC 2 and NAIC submissions.`,
+        confidence:'high',
+      };
+    }
+  }
+
   return null;
 }
 
@@ -606,6 +758,12 @@ const MATRIX_ROWS = [
   {task:'Enrichment',category:'Operations',t:'enrichment',c:'operations'},
   {task:'Enrichment',category:'Finance',t:'enrichment',c:'finance'},
   {task:'Enrichment',category:'Legal',t:'enrichment',c:'legal'},
+  {task:'Components',category:'Classification',t:'components',c:'classification'},
+  {task:'Components',category:'Validation',t:'components',c:'validation'},
+  {task:'Components',category:'Comparison / Diffing',t:'components',c:'comparison'},
+  {task:'Components',category:'Redaction',t:'components',c:'redaction'},
+  {task:'Components',category:'Generation',t:'components',c:'generation'},
+  {task:'Components',category:'Audit / Compliance',t:'components',c:'audit'},
 ];
 
 function cell(a, b) {
