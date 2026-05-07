@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocIntel Decision Matrix — ElevateNow</title>
+<style>
+:root {
+  --ink: #1c1917;
+  --paper: #faf9f7;
+  --surface: #ffffff;
+  --accent: #c0392b;
+  --border: #e7e2da;
+  --muted: #78716c;
+  --radius: 6px;
+  --build: #166534; --build-bg: #f0fdf4; --build-border: #86efac;
+  --buy: #1e40af;  --buy-bg: #eff6ff;  --buy-border: #93c5fd;
+  --blend: #92400e; --blend-bg: #fffbeb; --blend-border: #fcd34d;
+  --caution: #7f1d1d; --caution-bg: #fff1f2; --caution-border: #fca5a5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Georgia','Times New Roman',serif;background:var(--paper);color:var(--ink);line-height:1.65;font-size:16px;}
+a{color:var(--accent);}
+
+nav{border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;background:var(--surface);}
+.nav-brand{font-size:.9rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-sep{color:var(--border);}
+.nav-series{font-size:.8rem;color:var(--muted);font-family:'Courier New',monospace;}
+
+.hero{max-width:860px;margin:0 auto;padding:3rem 2rem 2rem;border-bottom:1px solid var(--border);}
+.hero-tag{display:inline-block;font-family:'Courier New',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);border:1px solid var(--accent);padding:.15rem .5rem;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:.75rem;}
+.hero-sub{font-size:1.05rem;color:var(--muted);max-width:640px;}
+
+.main{max-width:860px;margin:0 auto;padding:2rem;}
+
+.configurator{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;margin-bottom:1.5rem;}
+.configurator h2{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.25rem;color:var(--muted);}
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+@media(max-width:600px){.config-grid{grid-template-columns:1fr;}}
+.field label{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem;}
+.field select{width:100%;padding:.55rem .75rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-family:inherit;font-size:.95rem;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2378716c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;cursor:pointer;}
+.field select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.field-desc{font-size:.78rem;color:var(--muted);margin-top:.25rem;font-style:italic;}
+
+.placeholder-card{text-align:center;padding:3rem 2rem;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);margin-bottom:2rem;font-size:.93rem;}
+
+.result-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:2rem;}
+.result-header{padding:1.25rem 1.75rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.verdict-badge{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;padding:.3rem .75rem;border-radius:99px;border:1px solid;white-space:nowrap;}
+.verdict-build{background:var(--build-bg);color:var(--build);border-color:var(--build-border);}
+.verdict-buy{background:var(--buy-bg);color:var(--buy);border-color:var(--buy-border);}
+.verdict-blend{background:var(--blend-bg);color:var(--blend);border-color:var(--blend-border);}
+.verdict-caution{background:var(--caution-bg);color:var(--caution);border-color:var(--caution-border);}
+.result-headline{font-size:1.05rem;font-weight:600;flex:1;}
+.confidence-badge{font-size:.72rem;font-family:'Courier New',monospace;color:var(--muted);background:var(--paper);border:1px solid var(--border);padding:.2rem .5rem;border-radius:4px;white-space:nowrap;}
+
+.result-body{padding:1.5rem 1.75rem;background:var(--surface);display:grid;gap:1.25rem;}
+.stack-section h3,.rationale-section h3,.sovereignty-section h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;}
+.stack-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.chip{font-family:'Courier New',monospace;font-size:.78rem;background:var(--paper);border:1px solid var(--border);padding:.2rem .5rem;border-radius:4px;color:var(--ink);}
+.rationale-section p{font-size:.93rem;color:#374151;line-height:1.7;}
+.sovereignty-section{background:var(--paper);border-left:3px solid var(--accent);padding:.75rem 1rem;border-radius:0 4px 4px 0;}
+.sovereignty-section p{font-size:.88rem;color:var(--muted);}
+
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.75rem;}
+.sep{border:none;border-top:1px solid var(--border);margin:2rem 0;}
+
+.def-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+@media(max-width:600px){.def-grid{grid-template-columns:1fr;}}
+.def-card{padding:1.25rem;border-radius:var(--radius);border:1px solid;}
+.def-card h3{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+.def-card p{font-size:.83rem;line-height:1.6;}
+.def-build{background:var(--build-bg);border-color:var(--build-border);color:var(--build);}
+.def-build p{color:#166534;}
+.def-buy{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.def-buy p{color:#1e40af;}
+.def-blend{background:var(--blend-bg);border-color:var(--blend-border);color:var(--blend);}
+.def-blend p{color:#92400e;}
+
+.posture-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+@media(max-width:600px){.posture-grid{grid-template-columns:1fr;}}
+.posture-card{padding:1.25rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);}
+.posture-label{font-family:'Courier New',monospace;font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:.25rem;}
+.posture-name{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.5rem;}
+.posture-card p{font-size:.83rem;color:#374151;line-height:1.6;}
+
+.ref-section{margin-bottom:3rem;}
+.ref-section h2{font-size:1.1rem;font-weight:700;margin-bottom:.5rem;}
+.ref-section .section-desc{font-size:.88rem;color:var(--muted);margin-bottom:1rem;}
+.table-wrapper{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--surface);}
+th{text-align:left;padding:.75rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);border-bottom:1px solid var(--border);}
+td{padding:.75rem 1rem;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--paper);}
+.cell-task{font-weight:700;font-size:.8rem;color:var(--muted);white-space:nowrap;}
+.cell-category{color:#374151;font-size:.82rem;}
+.cell-verdict{display:inline-flex;align-items:center;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:.15rem .45rem;border-radius:3px;}
+.cv-build{background:var(--build-bg);color:var(--build);}
+.cv-buy{background:var(--buy-bg);color:var(--buy);}
+.cv-blend{background:var(--blend-bg);color:var(--blend);}
+.cv-caution{background:var(--caution-bg);color:var(--caution);}
+.posture-note{font-size:.7rem;color:var(--muted);margin-top:.2rem;}
+
+.provider-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:2rem;}
+.provider-box p{font-size:.85rem;color:#374151;margin-bottom:.75rem;line-height:1.6;}
+.provider-box .excluded{font-size:.78rem;color:var(--muted);margin-top:.75rem;}
+
+footer{border-top:1px solid var(--border);text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);}
+footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://insights.elevatenow.tech" class="nav-brand">ElevateNow</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-series">DocIntel Decision Matrix</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Decision Framework · Carrier Edition</div>
+  <h1>Insurance DocIntel<br>Decision Matrix</h1>
+  <p class="hero-sub">Configure your task, LLM policy, and data posture to receive a prescriptive Buy&nbsp;/&nbsp;Build&nbsp;/&nbsp;Blend recommendation with a justified technology stack — across extraction and domain enrichment.</p>
+</div>
+
+<div class="main">
+
+  <div class="configurator">
+    <h2>Configure Your Requirements</h2>
+    <div class="config-grid">
+      <div class="field">
+        <label for="task">Task Type</label>
+        <select id="task" onchange="onTaskChange()">
+          <option value="">— Select —</option>
+          <option value="extraction">Document Extraction</option>
+          <option value="enrichment">Domain Enrichment</option>
+        </select>
+        <div class="field-desc">Extraction = pull structured data from documents. Enrichment = decision support on top of extracted data.</div>
+      </div>
+      <div class="field">
+        <label for="category">Category / Domain</label>
+        <select id="category" onchange="onCompute()" disabled>
+          <option value="">— Select task first —</option>
+        </select>
+        <div class="field-desc" id="category-desc">Select a task type to see available options.</div>
+      </div>
+      <div class="field">
+        <label for="llmPolicy">LLM Policy</label>
+        <select id="llmPolicy" onchange="onCompute()">
+          <option value="">— Select —</option>
+          <option value="no-llm">No LLM</option>
+          <option value="non-chinese">Non-Chinese LLM Only</option>
+          <option value="any">Any LLM</option>
+        </select>
+        <div class="field-desc">Non-Chinese: Anthropic, OpenAI, Mistral, Meta, Google. Excludes Qwen, ERNIE, DeepSeek, Yi, Moonshot.</div>
+      </div>
+      <div class="field">
+        <label for="posture">Data Posture</label>
+        <select id="posture" onchange="onCompute()">
+          <option value="">— Select —</option>
+          <option value="A">Posture A — Cloud-safe</option>
+          <option value="B">Posture B — No PHI to cloud</option>
+          <option value="C">Posture C — Air-gapped</option>
+        </select>
+        <div class="field-desc">Governs which technology tiers are permissible. Posture B applies to most WC, auto BI, and medical-adjacent lines.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-placeholder" class="placeholder-card">
+    Complete all four fields above to generate your recommendation.
+  </div>
+
+  <div id="result-card" class="result-card" style="display:none;">
+    <div class="result-header">
+      <span class="verdict-badge" id="verdict-badge"></span>
+      <span class="result-headline" id="result-headline"></span>
+      <span class="confidence-badge" id="confidence-badge"></span>
+    </div>
+    <div class="result-body">
+      <div class="stack-section">
+        <h3>Recommended Stack</h3>
+        <div class="stack-chips" id="stack-chips"></div>
+      </div>
+      <div class="rationale-section">
+        <h3>Rationale</h3>
+        <p id="rationale-text"></p>
+      </div>
+      <div class="sovereignty-section">
+        <h3>Data Sovereignty Note</h3>
+        <p id="sovereignty-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <p class="section-label">Framework</p>
+  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">Buy, Build, or Blend — Defined</h2>
+  <div class="def-grid">
+    <div class="def-card def-build">
+      <h3>Build</h3>
+      <p>Open-source, self-hosted components within the carrier VPC. No vendor dependency, no data egress. Correct when determinism is required or posture constrains cloud usage.</p>
+    </div>
+    <div class="def-card def-buy">
+      <h3>Buy</h3>
+      <p>Managed commercial services: AWS Textract, Azure Form Recognizer, Google Document AI. Fastest to production. Appropriate for Posture A where data sovereignty allows cloud processing.</p>
+    </div>
+    <div class="def-card def-blend">
+      <h3>Blend</h3>
+      <p>Deterministic extraction layer (T0–T2 build) paired with an LLM reasoning layer (T4 local or T5 cloud). Correct architecture for any task requiring both structure and interpretation.</p>
+    </div>
+  </div>
+
+  <p class="section-label">Data Posture Reference</p>
+  <div class="posture-grid">
+    <div class="posture-card">
+      <div class="posture-label">A</div>
+      <div class="posture-name">Cloud-Safe</div>
+      <p>No PHI or regulated PII in scope. Cloud APIs are permissible. Standard commercial lines without medical data.</p>
+    </div>
+    <div class="posture-card">
+      <div class="posture-label">B</div>
+      <div class="posture-name">No PHI to Cloud</div>
+      <p>Documents contain PII, PHI, or carrier-sensitive data. External LLM APIs prohibited. Local/VPC-deployed models (T4) required.</p>
+    </div>
+    <div class="posture-card">
+      <div class="posture-label">C</div>
+      <div class="posture-name">Air-Gapped</div>
+      <p>Fully isolated environment. No network egress permitted. T0–T2 deterministic stack and local T4 models only.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <div class="ref-section">
+    <p class="section-label">Reference</p>
+    <h2>Full Decision Matrix</h2>
+    <p class="section-desc">Verdicts shown for Posture A. Cells marked † differ under Posture B / C — use the configurator above for details and stack.</p>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Category / Domain</th>
+            <th>No LLM</th>
+            <th>Non-Chinese LLM</th>
+            <th>Any LLM</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="provider-box">
+    <p class="section-label" style="margin-bottom:.5rem;">Non-Chinese LLM Policy — Provider Reference</p>
+    <p>Carriers adopting a non-Chinese LLM policy exclude models from companies subject to China's National Intelligence Law (2017), which requires entities to cooperate with state intelligence operations. The following providers are aligned with this policy:</p>
+    <div class="stack-chips">
+      <span class="chip">Anthropic Claude (US)</span>
+      <span class="chip">OpenAI GPT-4 (US)</span>
+      <span class="chip">Mistral (EU — France)</span>
+      <span class="chip">Meta Llama (US)</span>
+      <span class="chip">Google Gemini (US)</span>
+    </div>
+    <p class="excluded">Excluded: Alibaba Qwen &nbsp;·&nbsp; Baidu ERNIE &nbsp;·&nbsp; DeepSeek &nbsp;·&nbsp; Moonshot AI &nbsp;·&nbsp; 01.AI (Yi) &nbsp;·&nbsp; Zhipu GLM</p>
+  </div>
+
+</div>
+
+<footer>
+  ElevateNow DocIntel Series &nbsp;·&nbsp; <a href="https://insights.elevatenow.tech">insights.elevatenow.tech</a>
+</footer>
+
+<script>
+const CATEGORIES = {
+  extraction: [
+    {value:'cat1',label:'Cat 1 — Structured Fields',desc:'Dates, amounts, VIN, policy numbers — deterministic, zero variance required.'},
+    {value:'cat2',label:'Cat 2 — Ontology Categoricals',desc:'Body part, cause of loss, NAICS code — ontology-anchored classification.'},
+    {value:'cat3',label:'Cat 3 — Verbatim Narrative',desc:'Loss descriptions, adjuster notes — literal character-faithful capture.'},
+    {value:'cat4',label:'Cat 4 — Interpretation & Synthesis',desc:'Subrogation signals, red flags, coverage analysis — requires reasoning.'},
+    {value:'cat5',label:'Cat 5 — Form Structure',desc:'Tables, checkboxes, ACORD layout recognition — CV/layout analysis.'},
+  ],
+  enrichment: [
+    {value:'underwriting',label:'Underwriting',desc:'Eligibility, appetite, exposure analysis, class of business decisions.'},
+    {value:'claims',label:'Claims',desc:'FNOL triage, subrogation detection, fraud signals, coverage determination.'},
+    {value:'operations',label:'Operations',desc:'Workflow routing, document classification, exception handling.'},
+    {value:'finance',label:'Finance',desc:'Premium reconciliation, financial field extraction, anomaly detection.'},
+    {value:'legal',label:'Legal',desc:'Coverage clause analysis, exclusion mapping, entity extraction.'},
+  ],
+};
+
+function onTaskChange() {
+  const task = document.getElementById('task').value;
+  const catSel = document.getElementById('category');
+  const catDesc = document.getElementById('category-desc');
+  catSel.innerHTML = '';
+  if (!task) {
+    catSel.innerHTML = '<option value="">— Select task first —</option>';
+    catSel.disabled = true;
+    catDesc.textContent = 'Select a task type to see available options.';
+    hideResult();
+    return;
+  }
+  catSel.disabled = false;
+  catSel.innerHTML = '<option value="">— Select —</option>';
+  CATEGORIES[task].forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.value; o.textContent = c.label;
+    catSel.appendChild(o);
+  });
+  catDesc.textContent = task === 'extraction'
+    ? 'Five categories based on output type and LLM requirement.'
+    : 'Five insurance domains requiring decision support beyond raw extraction.';
+  onCompute();
+}
+
+function hideResult() {
+  document.getElementById('result-placeholder').style.display = '';
+  document.getElementById('result-card').style.display = 'none';
+}
+
+function getRecommendation(task, category, llmPolicy, posture) {
+  const hasLLM = llmPolicy !== 'no-llm';
+  const isNonChinese = llmPolicy === 'non-chinese';
+  const cloudOK = posture === 'A';
+  const airGapped = posture === 'C';
+  const llmLabel = isNonChinese ? 'Claude / GPT-4 / Mistral' : 'Claude / GPT-4 / Gemini / Qwen';
+
+  if (task === 'extraction') {
+
+    if (category === 'cat1') return {
+      verdict:'build',
+      headline:'T0 + T2 deterministic pipeline — LLM adds no value here',
+      stack:['pdfplumber','PyMuPDF','Compiled regex','spaCy NER'],
+      rationale:'Structured fields (dates, amounts, VIN, policy numbers) require zero run variance. LLMs introduce non-determinism and are counterproductive. The T0+T2 build is correct and sufficient regardless of LLM policy or posture — this is the only category where the decision is fully posture-independent.',
+      sovereignty:'No network calls required. Safe for Postures A, B, and C without modification.',
+      confidence:'high',
+    };
+
+    if (category === 'cat2') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'spaCy NER + ontology crosswalk — deterministic categorical mapping',
+        stack:['spaCy NER (trained)','NAICS / SIC crosswalk','Ontology index','Regex fallback'],
+        rationale:'Ontology-anchored categoricals (cause of loss, body part, NAICS code) resolve deterministically with a trained NER model and curated crosswalk. No LLM needed if the training corpus covers the carrier\'s class of business. Budget for a 500–1,000 example annotation sprint to reach production accuracy.',
+        sovereignty:'Fully self-contained. No data egress. Safe for all postures.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'T2 NER primary + cloud LLM escalation for low-confidence edge cases',
+        stack:['spaCy NER (trained)','NAICS / SIC crosswalk',llmLabel+' (fallback)','Confidence threshold gate'],
+        rationale:'Route high-confidence categoricals through the T2 NER pipeline (deterministic, no egress) and escalate only low-confidence outputs to an LLM for disambiguation. This keeps 80–90% of volume in the deterministic lane and limits LLM cost and latency to edge cases. Tune the confidence gate on your carrier\'s class-of-business distribution.',
+        sovereignty:'Cloud LLM used only on low-confidence records. Ensure no PHI in escalated payloads. Posture A only.',
+        confidence:'high',
+      };
+      return {
+        verdict:'build',
+        headline:'T2 deterministic pipeline — cloud LLM prohibited by posture',
+        stack:['spaCy NER (trained)','NAICS / SIC crosswalk','Ontology index','Human review queue (low-confidence)'],
+        rationale:`Posture ${posture} prohibits external LLM API calls. The T2 build remains fully valid — low-confidence edge cases route to a human review queue rather than LLM disambiguation. Invest in annotation to expand NER training coverage and reduce the exception rate over time.`,
+        sovereignty:`Posture ${posture}: no external API calls. All processing within carrier VPC.`,
+        confidence:'high',
+      };
+    }
+
+    if (category === 'cat3') return {
+      verdict:'build',
+      headline:'T1 OCR pipeline — LLMs paraphrase; verbatim capture requires literal fidelity',
+      stack:['Tesseract 5','PaddleOCR v4','pdfplumber (digital-native)','Post-processing normalization'],
+      rationale:'Verbatim narrative capture (loss descriptions, adjuster notes, claimant statements) requires character-faithful reproduction of the source document. LLMs paraphrase, summarize, and hallucinate — all failures for verbatim output. A T1 OCR pipeline with pdfplumber for digital-native PDFs is correct. Output quality is determined by scan resolution and document condition, not model capability.',
+      sovereignty:'No LLM calls. Safe for all postures without modification.',
+      confidence:'high',
+    };
+
+    if (category === 'cat4') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Pattern matching only — interpretation quality is significantly limited without LLM',
+        stack:['Regex pattern library','Keyword signal detection','Rule-based heuristics','Human review (mandatory)'],
+        rationale:'Interpretation and synthesis tasks — subrogation signals, red flags, coverage gap analysis — are categorically LLM-appropriate. A no-LLM constraint reduces this to rule-based heuristics and keyword matching, which will miss complex reasoning chains and produce high false-negative rates on nuanced documents. Treat as first-pass triage only with mandatory human review on every output.',
+        sovereignty:'No external calls. All postures permitted. Accept significantly reduced accuracy as the tradeoff.',
+        confidence:'low',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'T0–T2 extraction + cloud LLM for reasoning and synthesis',
+        stack:['pdfplumber / Tesseract 5','spaCy NER',llmLabel,'Governed prompt templates','Confidence scoring'],
+        rationale:'Cat 4 is the only extraction category that genuinely requires LLM capability. Correct architecture: T0–T2 extracts structured entities and verbatim narrative, then passes a governed context window to the LLM for interpretation. Governed prompt templates (cognitive-pattern style) constrain the LLM\'s scope and make outputs auditable. This is the reference architecture for subrogation and red-flag detection.',
+        sovereignty:`Posture ${posture}: cloud LLM permitted. Scrub PHI from document payloads before API submission if any medical content is present.`,
+        confidence:'high',
+      };
+      if (!airGapped) return {
+        verdict:'blend',
+        headline:'T0–T2 extraction + T4 local LLM (carrier VPC) for PHI-safe synthesis',
+        stack:['pdfplumber / Tesseract 5','spaCy NER','Ollama + Llama 3.3 70B (local)','Governed prompt templates','Carrier VPC deployment'],
+        rationale:'Posture B prohibits cloud LLM APIs but interpretation tasks still require reasoning. Deploy Llama 3.3 70B via Ollama within the carrier VPC (T4 tier). Quality is somewhat below frontier cloud models but sufficient for structured insurance interpretation. Requires GPU infrastructure: 2× A100 80GB or equivalent.',
+        sovereignty:'Posture B compliant: all inference within carrier VPC. No data leaves the network perimeter.',
+        confidence:'medium',
+      };
+      return {
+        verdict:'blend',
+        headline:'T0–T2 + air-gapped local T4 model — expect operational complexity',
+        stack:['pdfplumber / Tesseract 5','spaCy NER','Llama 3.3 70B (air-gapped local)','Governed prompt templates'],
+        rationale:'Air-gapped Posture C with a local LLM is viable but requires a manual model-update transfer process. Llama 3.3 70B remains performant for structured insurance tasks but you lose continuous improvement. Plan a quarterly model-update cycle and document the transfer procedure for your SOC 2 auditors.',
+        sovereignty:'Posture C: fully air-gapped. No network egress. Manual model update cadence required.',
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'cat5') {
+      if (cloudOK) return {
+        verdict:'buy',
+        headline:'Managed document AI — form structure is a solved problem at Posture A',
+        stack:['Azure Form Recognizer','Google Document AI','AWS Textract (tables / forms)'],
+        rationale:'Form structure understanding — table detection, checkbox state, ACORD layout recognition — is a solved problem in managed document AI services. Buying is faster and more accurate than building for this category at Posture A. Azure Form Recognizer leads on ACORD form types; AWS Textract leads on table extraction; Google Document AI leads on handwriting.',
+        sovereignty:'Posture A: documents processed on vendor infrastructure. Review vendor DPA terms for insurance PII.',
+        confidence:'high',
+      };
+      return {
+        verdict:'build',
+        headline:'Docling + IBM Granite-Docling — local form structure, no cloud required',
+        stack:['Docling (IBM, Apache 2.0)','IBM Granite-Docling-258M (local, CPU-safe)','pdfplumber (digital-native layout)'],
+        rationale:`Posture ${posture} prohibits cloud document AI services. Docling with the Granite-Docling-258M model (258M parameters, runs on CPU) is the correct build-path for local form structure analysis. It handles ACORD form layouts, table extraction, and checkbox detection without data egress. Accuracy trails Azure Form Recognizer on complex multi-column layouts — budget for a post-processing validation layer.`,
+        sovereignty:`Posture ${posture} compliant: Docling runs entirely within carrier VPC. Apache 2.0 license carries no data-sharing obligations.`,
+        confidence:'medium',
+      };
+    }
+  }
+
+  if (task === 'enrichment') {
+
+    if (category === 'underwriting') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Deterministic three-gate eligibility engine — zero hallucination risk',
+        stack:['Eligibility rules engine','SIC → NAICS crosswalk','Hard exclusion matrix','Vertical appetite index','Operations keyword gate'],
+        rationale:'Underwriting eligibility without LLM is best served by a three-gate deterministic pipeline: hard exclusions short-circuit first, vertical appetite resolves second, operations exposure checks third. Every decision traces to a governed rule. This is the production-proven architecture for class-of-business eligibility — no hallucination, full auditability.',
+        sovereignty:'No LLM calls. Safe for all postures. All processing in rules engine.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Deterministic eligibility gates + cloud LLM for exposure synthesis',
+        stack:['Three-gate eligibility pipeline',llmLabel+' (exposure synthesis)','UW-CP-001 cognitive pattern','Decision trace logging'],
+        rationale:'The optimal UW enrichment architecture pairs the deterministic eligibility engine with an LLM-powered exposure synthesis layer. The rules engine handles binary eligibility — the LLM handles nuanced exposure interrogation (premises liability, products exposure, contractual liability, etc.) against a governed cognitive pattern. Neither layer alone is sufficient for complex commercial accounts.',
+        sovereignty:'Posture A: cloud LLM for exposure synthesis. Pass gate outputs rather than raw submissions to the LLM — limits PII surface area.',
+        confidence:'high',
+      };
+      if (!airGapped) return {
+        verdict:'blend',
+        headline:'Deterministic gates + T4 local LLM for PHI-safe exposure synthesis',
+        stack:['Three-gate eligibility pipeline','Ollama + Llama 3.3 70B (local)','UW-CP-001 cognitive pattern','Carrier VPC deployment'],
+        rationale:'Posture B preserves the full blend architecture — deterministic gates plus LLM synthesis — with inference moved to a local T4 model within the carrier VPC. Llama 3.3 70B performs well on structured underwriting tasks against governed prompts. Expect 10–15% lower nuance on edge-case exposure analysis compared to frontier cloud models.',
+        sovereignty:'Posture B: all inference local. Rules engine + T4 LLM within VPC. No data egress.',
+        confidence:'high',
+      };
+      return {
+        verdict:'build',
+        headline:'Three-gate deterministic pipeline — air-gapped LLM is marginal ROI',
+        stack:['Three-gate eligibility pipeline','Expanded rule library','Human review for CONDITIONAL decisions'],
+        rationale:'Air-gapped Posture C makes LLM deployment operationally complex enough that the deterministic-only build is often the right answer. The three-gate pipeline handles clear ELIGIBLE/DECLINE cases cleanly. Invest in expanding the rule library and CONDITIONAL-case playbooks rather than operating a local LLM in an air-gapped environment.',
+        sovereignty:'Posture C: fully air-gapped. No LLM infrastructure required.',
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'claims') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Deterministic FNOL triage + keyword signal detection',
+        stack:['FNOL triage rules','Injury severity keyword library','Coverage trigger matching','Subrogation keyword signals','Claim routing rules'],
+        rationale:'Claims enrichment without LLM relies on a curated rules engine: FNOL keyword triggers, injury severity classification, coverage trigger matching, and subrogation signal detection. This handles 70–80% of volume accurately. Complex multi-party liability and ambiguous coverage questions will require human review — invest heavily in the exception queue design.',
+        sovereignty:'No LLM. Safe for all postures including PHI-heavy WC and auto medical.',
+        confidence:'medium',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Deterministic triage + cloud LLM for coverage analysis and fraud signals',
+        stack:['FNOL triage rules','spaCy NER (injury, parties)',llmLabel+' (coverage analysis)','Subrogation pattern library','Fraud signal scoring'],
+        rationale:'The blend architecture routes structured FNOL fields through deterministic rules and passes narrative content — claimant statements, adjuster notes — to the LLM for coverage analysis and fraud signal scoring. The LLM layer adds significant value on complex liability and multi-claimant scenarios where rule-based systems produce high false-negative rates.',
+        sovereignty:'Posture A: police reports and IA reports containing PII/PHI must be scrubbed before LLM submission. In practice many claims files are Posture B — verify before enabling cloud LLM on this domain.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'Deterministic triage + T4 local LLM — PHI-safe for WC and auto BI',
+        stack:['FNOL triage rules','spaCy NER','Ollama + Llama 3.3 70B (local)','Carrier VPC deployment'],
+        rationale:`Posture ${posture} is the correct posture for WC and auto BI claims — they contain medical records, police reports, and IA reports (PHI under HIPAA). The blend architecture holds: deterministic triage plus a T4 local LLM for coverage analysis. This is PHI-safe and preserves the reasoning capability needed for complex claims.`,
+        sovereignty:`Posture ${posture}: T4 local LLM within carrier VPC. PHI never leaves the network perimeter. Required for WC, auto BI, and any claims with medical records.`,
+        confidence:'high',
+      };
+    }
+
+    if (category === 'operations') {
+      if (!hasLLM || !cloudOK) return {
+        verdict:'build',
+        headline:'Rules-based workflow routing and document classification',
+        stack:['Document type classifier (rules)','Workflow routing engine','Priority scoring rules','Exception queue routing'],
+        rationale:'Operations enrichment — document routing, workflow classification, queue prioritization — is well-served by deterministic rules. Document type classification (ACORD 125, loss run, SOV) is a finite set. Priority scoring rules based on coverage amount, loss type, and SLA tier handle 90%+ of volume. LLM is not justified here when rules cover the vast majority of cases.',
+        sovereignty:'Rules-only. Safe for all postures. No LLM infrastructure required.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'Rules-based routing + LLM for unstructured exception handling',
+        stack:['Document routing rules',llmLabel+' (exception triage)','Exception pattern library','Escalation routing'],
+        rationale:'With Posture A and an LLM available, add an LLM exception-handling layer for documents that fall outside the rules classifier — novel document types, multi-policy packages, complex endorsements. The LLM reads unstructured content and suggests the correct routing category, reducing the human exception queue by 40–60% without compromising the deterministic core.',
+        sovereignty:'Posture A: operational documents are typically not PHI. Verify before enabling cloud LLM on this domain.',
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'finance') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'T2 regex extraction — deterministic and audit-ready',
+        stack:['Compiled regex (premium, deductible, limits)','Date normalization rules','Currency parsing','Policy number extraction','Reconciliation rules'],
+        rationale:'Financial field extraction — premiums, deductibles, limits, policy numbers, effective dates — is a Cat 1 problem at its core. Compiled regex with domain-tuned patterns achieves 98%+ accuracy on clean digital documents. On poor-quality scans, pair with Tesseract 5. LLM is not needed and introduces variance in a domain where variance is unacceptable for audit.',
+        sovereignty:'No LLM calls. Fully deterministic and auditable. Safe for all postures.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'T2 extraction + LLM for anomaly detection and variance analysis',
+        stack:['Compiled regex (financial fields)',llmLabel+' (anomaly analysis)','Statistical variance rules','Audit trail logging'],
+        rationale:'The deterministic T2 layer handles field extraction; the LLM adds value in anomaly detection — identifying unusual premium-to-limit ratios, inconsistent deductible structures, or endorsements conflicting with the base policy. This is a narrow, well-scoped LLM use case with low hallucination risk because the structured extracted data provides grounding.',
+        sovereignty:'Posture A: financial documents may contain policyholder TIN, SSN, or banking details. Evaluate field-level redaction before LLM submission.',
+        confidence:'medium',
+      };
+      return {
+        verdict:'build',
+        headline:'T2 deterministic extraction — financial PII warrants posture discipline',
+        stack:['Compiled regex (financial fields)','Tesseract 5 (scan fallback)','Reconciliation rules','Statistical anomaly flags (rules-based)'],
+        rationale:`Posture ${posture} is appropriate for financial documents — they routinely contain TIN, SSN, and banking details. The T2 deterministic build is fully sufficient. Statistical anomaly detection can be implemented as rules-based checks (premium-to-limit ratio thresholds, deductible range validation) without LLM.`,
+        sovereignty:`Posture ${posture}: no external API calls. Financial PII protected within carrier environment.`,
+        confidence:'high',
+      };
+    }
+
+    if (category === 'legal') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'T2 NER for entities only — clause interpretation requires LLM',
+        stack:['spaCy NER (legal entities, parties)','Regex (policy number, dates, party IDs)','Keyword exclusion detection','Human review (interpretation tasks)'],
+        rationale:'Legal document enrichment without LLM is limited to entity extraction (parties, dates, policy references) and keyword-based exclusion flagging. Coverage clause interpretation, exclusion-condition interactions, and warranty analysis require LLM reasoning — this path produces a partial product. Design outputs to explicitly route interpretation tasks to human legal review.',
+        sovereignty:'No external calls. Safe for all postures. Accept significant capability limitation on interpretation.',
+        confidence:'low',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'T2 NER + cloud LLM for coverage clause analysis and exclusion mapping',
+        stack:['spaCy NER (legal entities, parties)',llmLabel+' (clause analysis)','Exclusion pattern library','Coverage trigger taxonomy'],
+        rationale:'Legal enrichment is the strongest LLM use case after Cat 4 interpretation. Insurance policy language requires reasoning about conditions, exclusions, and endorsement interactions that defeat rule-based systems. The T2 layer extracts entities and identifies clause locations; the LLM analyzes language, identifies coverage gaps, and maps exclusion-condition pairs against the exposure profile.',
+        sovereignty:'Posture A: policy documents are generally not PHI but may contain policyholder PII and D&O-sensitive business details. Review before LLM submission.',
+        confidence:'high',
+      };
+      return {
+        verdict:'blend',
+        headline:'T2 NER + T4 local LLM for PHI-safe legal document analysis',
+        stack:['spaCy NER (legal entities)','Ollama + Llama 3.3 70B (local)','Coverage trigger taxonomy','Carrier VPC deployment'],
+        rationale:`Posture ${posture} applies when legal documents include PHI attachments (medical records attached to WC policy endorsements). The blend architecture holds: T2 NER for entity extraction, T4 local LLM for clause analysis. Llama 3.3 70B performs well on structured legal analysis against governed prompts — the gap to frontier models is narrower for structured legal tasks than for open-ended reasoning.`,
+        sovereignty:`Posture ${posture}: T4 local LLM. Legal documents with PHI attachments handled within VPC. No data egress.`,
+        confidence:'medium',
+      };
+    }
+  }
+
+  return null;
+}
+
+function onCompute() {
+  const task = document.getElementById('task').value;
+  const category = document.getElementById('category').value;
+  const llmPolicy = document.getElementById('llmPolicy').value;
+  const posture = document.getElementById('posture').value;
+  if (!task || !category || !llmPolicy || !posture) { hideResult(); return; }
+  const rec = getRecommendation(task, category, llmPolicy, posture);
+  if (!rec) { hideResult(); return; }
+
+  document.getElementById('result-placeholder').style.display = 'none';
+  const card = document.getElementById('result-card');
+  card.style.display = '';
+
+  const badge = document.getElementById('verdict-badge');
+  badge.textContent = rec.verdict.toUpperCase();
+  badge.className = 'verdict-badge verdict-' + rec.verdict;
+  document.getElementById('result-headline').textContent = rec.headline;
+  document.getElementById('confidence-badge').textContent = 'Confidence: ' + rec.confidence.toUpperCase();
+  document.getElementById('stack-chips').innerHTML = rec.stack.map(s => `<span class="chip">${s}</span>`).join('');
+  document.getElementById('rationale-text').textContent = rec.rationale;
+  document.getElementById('sovereignty-text').textContent = rec.sovereignty;
+}
+
+const MATRIX_ROWS = [
+  {task:'Extraction',category:'Cat 1 — Structured Fields',t:'extraction',c:'cat1'},
+  {task:'Extraction',category:'Cat 2 — Ontology Categoricals',t:'extraction',c:'cat2'},
+  {task:'Extraction',category:'Cat 3 — Verbatim Narrative',t:'extraction',c:'cat3'},
+  {task:'Extraction',category:'Cat 4 — Interpretation & Synthesis',t:'extraction',c:'cat4'},
+  {task:'Extraction',category:'Cat 5 — Form Structure',t:'extraction',c:'cat5'},
+  {task:'Enrichment',category:'Underwriting',t:'enrichment',c:'underwriting'},
+  {task:'Enrichment',category:'Claims',t:'enrichment',c:'claims'},
+  {task:'Enrichment',category:'Operations',t:'enrichment',c:'operations'},
+  {task:'Enrichment',category:'Finance',t:'enrichment',c:'finance'},
+  {task:'Enrichment',category:'Legal',t:'enrichment',c:'legal'},
+];
+
+function cell(a, b) {
+  const differs = b && a.verdict !== b.verdict;
+  return `<span class="cell-verdict cv-${a.verdict}">${a.verdict.toUpperCase()}</span>${differs ? `<div class="posture-note">† B/C: ${b.verdict.toUpperCase()}</div>` : ''}`;
+}
+
+(function renderMatrix() {
+  const tbody = document.getElementById('matrix-body');
+  MATRIX_ROWS.forEach(row => {
+    const noA = getRecommendation(row.t, row.c, 'no-llm', 'A');
+    const ncA = getRecommendation(row.t, row.c, 'non-chinese', 'A');
+    const anA = getRecommendation(row.t, row.c, 'any', 'A');
+    const noB = getRecommendation(row.t, row.c, 'no-llm', 'B');
+    const ncB = getRecommendation(row.t, row.c, 'non-chinese', 'B');
+    const anB = getRecommendation(row.t, row.c, 'any', 'B');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="cell-task">${row.task}</td><td class="cell-category">${row.category}</td><td>${cell(noA,noB)}</td><td>${cell(ncA,ncB)}</td><td>${cell(anA,anB)}</td>`;
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>
