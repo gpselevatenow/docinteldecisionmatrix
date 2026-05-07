@@ -283,6 +283,7 @@ const CATEGORIES = {
     {value:'cat3',label:'Cat 3 — Verbatim Narrative',desc:'Loss descriptions, adjuster notes — literal character-faithful capture.'},
     {value:'cat4',label:'Cat 4 — Interpretation & Synthesis',desc:'Subrogation signals, red flags, coverage analysis — requires reasoning.'},
     {value:'cat5',label:'Cat 5 — Form Structure',desc:'Tables, checkboxes, ACORD layout recognition — CV/layout analysis.'},
+    {value:'cat6',label:'Cat 6 — Multi-modal / Visual',desc:'Property photos, vehicle damage images, site inspection visuals, handwritten notes within images.'},
   ],
   enrichment: [
     {value:'underwriting',label:'Underwriting',desc:'Eligibility, appetite, exposure analysis, class of business decisions.'},
@@ -299,6 +300,7 @@ const CATEGORIES = {
     {value:'redaction',label:'Redaction',desc:'PII / PHI removal — SSN, TIN, medical record numbers — before downstream LLM processing.'},
     {value:'generation',label:'Generation',desc:'Draft output documents — coverage summaries, declination letters, acknowledgment letters.'},
     {value:'audit',label:'Audit / Compliance',desc:'Check agent outputs against carrier guidelines, regulatory requirements, and model governance rules.'},
+    {value:'monitoring',label:'Monitoring / Drift Detection',desc:'Track extraction accuracy, LLM confidence distributions, model drift, and pipeline health over time.'},
   ],
 };
 
@@ -419,6 +421,41 @@ function getRecommendation(task, category, llmPolicy, posture) {
         stack:['pdfplumber / Tesseract 5','spaCy NER','Llama 3.3 70B (air-gapped local)','Governed prompt templates'],
         rationale:'Air-gapped Posture C with a local LLM is viable but requires a manual model-update transfer process. Llama 3.3 70B remains performant for structured insurance tasks but you lose continuous improvement. Plan a quarterly model-update cycle and document the transfer procedure for your SOC 2 auditors.',
         sovereignty:'Posture C: fully air-gapped. No network egress. Manual model update cadence required.',
+        confidence:'medium',
+      };
+    }
+
+    if (category === 'cat6') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Classical CV only — semantic visual understanding is not achievable without a vision LLM',
+        stack:['OpenCV (edge detection, color analysis)','Pre-trained CNN classifier (damage/no-damage)','EXIF metadata extraction','Image quality scorer'],
+        rationale:'Multi-modal extraction without a vision-capable LLM is severely limited. Classical computer vision can produce coarse outputs — pixel-based damage severity scoring, basic image classification (interior vs. exterior, vehicle vs. property), EXIF metadata — but cannot perform insurance-specific semantic analysis: distinguishing hail damage from impact damage, reading handwritten notes embedded in photos, understanding spatial relationships in site inspection images. Treat this as a triage layer only with mandatory human review on every output.',
+        sovereignty:'No LLM. Safe for all postures. Accept fundamental capability ceiling — semantic visual understanding requires a multimodal model.',
+        confidence:'low',
+      };
+      if (cloudOK) return {
+        verdict:'buy',
+        headline:'Frontier vision LLM — GPT-4o Vision or Claude 3.5 Sonnet for insurance image analysis',
+        stack:[isNonChinese ? 'Claude 3.5 Sonnet (vision)' : 'Claude 3.5 Sonnet / GPT-4o Vision / Gemini Vision','GPT-4o Vision','Google Document AI (handwriting)','OpenCV (pre-processing)'],
+        rationale:'Multi-modal extraction is the category most dominated by frontier cloud models. GPT-4o Vision and Claude 3.5 Sonnet handle property damage assessment, vehicle damage severity, handwritten note transcription, and spatial analysis of inspection photos at a quality level no local model currently matches. With Posture A this is a clear Buy — the managed API removes infrastructure burden and delivers state-of-the-art accuracy. Govern with structured output schemas to constrain model scope.',
+        sovereignty:'Posture A: property and vehicle photos are generally not PHI. Verify before enabling — WC claim photos may include identifiable claimants, which could be Posture B.',
+        confidence:'high',
+      };
+      if (!airGapped) return {
+        verdict:'blend',
+        headline:'Local vision LLM (LLaVA / Llama 3.2 Vision) + OpenCV pre-processing',
+        stack:['LLaVA 1.6 34B (local)','Llama 3.2 Vision 90B (local)','Ollama (vision model serving)','OpenCV (pre-processing, quality gate)','Carrier VPC deployment'],
+        rationale:'Posture B requires local vision model deployment. LLaVA 1.6 34B and Llama 3.2 Vision 90B are the leading open-weight vision models for local deployment — both run via Ollama. Quality gaps vs. frontier cloud models are most visible on complex damage assessment and handwritten content. GPU requirement is significant: Llama 3.2 Vision 90B requires 4× A100 80GB. Budget for reduced accuracy on fine-grained damage distinction tasks.',
+        sovereignty:'Posture B: all vision inference within carrier VPC. Photos with claimant PII stay local. No data egress.',
+        confidence:'medium',
+      };
+      return {
+        verdict:'blend',
+        headline:'Air-gapped local vision model — operationally intensive, accept accuracy reduction',
+        stack:['LLaVA 1.6 34B (air-gapped local)','OpenCV (pre-processing)','Manual model update cadence'],
+        rationale:'Air-gapped Posture C with a local vision model is viable but requires significant operational discipline — model weights must be transferred manually, GPU infrastructure must be maintained in isolation, and model updates follow a quarterly cadence. LLaVA 1.6 34B is the recommended air-gapped choice for balance of quality and resource requirements. Expect meaningful accuracy reduction on complex damage assessment vs. cloud frontier models.',
+        sovereignty:'Posture C: fully air-gapped. No network egress. Manual model lifecycle management required.',
         confidence:'medium',
       };
     }
@@ -729,6 +766,33 @@ function getRecommendation(task, category, llmPolicy, posture) {
       };
     }
 
+    if (category === 'monitoring') {
+      if (!hasLLM) return {
+        verdict:'build',
+        headline:'Metrics pipeline + statistical drift detection — no LLM needed',
+        stack:['Prometheus + Grafana (metrics)','CER / WER tracking per adapter','Confidence score distribution monitoring','PSI / KL-divergence drift detection','Alerting rules (threshold breaches)'],
+        rationale:'Monitoring is a Build regardless of LLM policy — you are tracking the performance of your DocIntel pipeline, not running a new inference task. The core components are a metrics pipeline (Prometheus/Grafana), per-adapter accuracy tracking (CER, WER, KV F1 against ground truth samples), LLM confidence score distribution monitoring, and statistical drift detection (Population Stability Index, KL-divergence). Alert when extraction accuracy drops below threshold or confidence distribution shifts. This is the evidence base for NAIC Model Bulletin AI drift reporting.',
+        sovereignty:'No LLM. Metrics data stays within carrier infrastructure. Safe for all postures.',
+        confidence:'high',
+      };
+      if (cloudOK) return {
+        verdict:'blend',
+        headline:'Metrics pipeline + LLM for automated drift narratives and anomaly explanation',
+        stack:['Prometheus + Grafana (metrics)','Statistical drift detection (PSI / KL)','Confidence distribution tracker',llmLabel+' (narrative reports)','Automated drift memo generator'],
+        rationale:'The metrics pipeline is always Build. With Posture A and an LLM available, add a narrative layer: when drift is detected, the LLM generates a structured incident report explaining what changed, which document types are affected, and what the likely cause is (model update, input distribution shift, new document format). This converts a Grafana alert into a NAIC-ready drift report automatically — significant governance efficiency for carriers under Model Bulletin scrutiny.',
+        sovereignty:'Posture A: pass aggregated metrics and drift statistics to the LLM — no individual document content. Minimal PII surface.',
+        confidence:'high',
+      };
+      return {
+        verdict:'build',
+        headline:'Metrics pipeline + statistical drift detection — monitoring is always Build at this posture',
+        stack:['Prometheus + Grafana (metrics)','CER / WER / KV F1 tracking','PSI / KL-divergence drift detection','Alerting rules','Human-authored drift reports'],
+        rationale:`Posture ${posture}: monitoring infrastructure is self-hosted by definition — you are observing your own pipeline. The metrics and drift detection stack runs within the carrier VPC. Drift reports for NAIC Model Bulletin compliance are authored by the model governance team based on dashboard outputs rather than LLM-generated narratives. This is the standard approach and fully acceptable to regulators.`,
+        sovereignty:`Posture ${posture}: all monitoring infrastructure within carrier VPC. Metrics aggregates never leave the network perimeter.`,
+        confidence:'high',
+      };
+    }
+
     if (category === 'audit') {
       if (!hasLLM) return {
         verdict:'build',
@@ -789,6 +853,7 @@ const MATRIX_ROWS = [
   {task:'Extraction',category:'Cat 3 — Verbatim Narrative',t:'extraction',c:'cat3'},
   {task:'Extraction',category:'Cat 4 — Interpretation & Synthesis',t:'extraction',c:'cat4'},
   {task:'Extraction',category:'Cat 5 — Form Structure',t:'extraction',c:'cat5'},
+  {task:'Extraction',category:'Cat 6 — Multi-modal / Visual',t:'extraction',c:'cat6'},
   {task:'Enrichment',category:'Underwriting',t:'enrichment',c:'underwriting'},
   {task:'Enrichment',category:'Claims',t:'enrichment',c:'claims'},
   {task:'Enrichment',category:'Operations',t:'enrichment',c:'operations'},
@@ -801,6 +866,7 @@ const MATRIX_ROWS = [
   {task:'Components',category:'Redaction',t:'components',c:'redaction'},
   {task:'Components',category:'Generation',t:'components',c:'generation'},
   {task:'Components',category:'Audit / Compliance',t:'components',c:'audit'},
+  {task:'Components',category:'Monitoring / Drift Detection',t:'components',c:'monitoring'},
 ];
 
 function cell(a, b) {
