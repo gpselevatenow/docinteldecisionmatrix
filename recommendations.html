@@ -925,6 +925,37 @@ footer a{color:var(--muted);}
     </table>
   </div>
 
+  <!-- METHODOLOGY NOTE -->
+  <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+    <p class="section-label">Benchmark Methodology</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;">
+      <p style="font-size:.83rem;color:#374151;line-height:1.75;margin-bottom:.85rem;">The accuracy ranges in this document are <strong>indicative benchmarks</strong> — informed directional estimates derived from four sources, not figures from a controlled empirical study on carrier-specific documents.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem;">
+        <div>
+          <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.4rem;">Sources used</p>
+          <ul style="font-size:.82rem;color:#374151;line-height:1.8;padding-left:1.1rem;">
+            <li>Published technology benchmarks — Tesseract 5, PaddleOCR v4, Azure Form Recognizer, AWS Textract vendor documentation</li>
+            <li>Academic research — i2b2 medical NER challenge (PHI redaction recall), TruthfulQA and FactScore studies (LLM hallucination rates), RAG evaluation literature (retrieval precision)</li>
+            <li>IDP industry reports and vendor case studies for insurance mailroom STP rates</li>
+            <li>First-principles reasoning for deterministic systems (e.g. AcroForm field extraction, hard exclusion rule matching)</li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.4rem;">Known limitations</p>
+          <ul style="font-size:.82rem;color:#374151;line-height:1.8;padding-left:1.1rem;">
+            <li>Figures are not validated against this carrier's specific document corpus, form variants, or broker submission mix</li>
+            <li>OCR accuracy is highly sensitive to scan resolution and document condition — ranges widen significantly on degraded input</li>
+            <li>LLM hallucination rates vary by model version, prompt design, and domain — ranges reflect published averages, not production measurements</li>
+            <li>STP rates are informed by IDP vendor case studies which may reflect optimised deployments</li>
+          </ul>
+        </div>
+      </div>
+      <div style="background:var(--paper);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:.75rem 1rem;">
+        <p style="font-size:.82rem;color:#374151;"><strong>Recommended next step:</strong> Validate against a stratified sample of 200–300 carrier documents (clean digital, clean scan, moderate scan, degraded scan) using a structured evaluation harness before committing to production accuracy thresholds or SLAs. These benchmarks provide the planning baseline — corpus evaluation provides the production baseline.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <footer>
