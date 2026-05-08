@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocIntel Solution Recommendations — ElevateNow</title>
+<style>
+:root {
+  --ink: #1c1917;
+  --paper: #faf9f7;
+  --surface: #ffffff;
+  --accent: #c0392b;
+  --border: #e7e2da;
+  --muted: #78716c;
+  --radius: 6px;
+  --build: #166534; --build-bg: #f0fdf4; --build-border: #86efac;
+  --buy: #1e40af;  --buy-bg: #eff6ff;  --buy-border: #93c5fd;
+  --blend: #92400e; --blend-bg: #fffbeb; --blend-border: #fcd34d;
+  --warn: #7f1d1d; --warn-bg: #fff1f2; --warn-border: #fca5a5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Georgia','Times New Roman',serif;background:var(--paper);color:var(--ink);line-height:1.65;font-size:16px;}
+a{color:var(--accent);}
+
+nav{border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;background:var(--surface);}
+.nav-brand{font-size:.9rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-sep{color:var(--border);}
+.nav-series{font-size:.8rem;color:var(--muted);font-family:'Courier New',monospace;}
+.nav-links{margin-left:auto;display:flex;gap:1.5rem;}
+.nav-link{font-size:.8rem;color:var(--muted);text-decoration:none;font-family:'Courier New',monospace;}
+.nav-link:hover{color:var(--accent);}
+.nav-link.active{color:var(--accent);}
+
+.hero{max-width:960px;margin:0 auto;padding:3rem 2rem 2rem;border-bottom:1px solid var(--border);}
+.hero-tag{display:inline-block;font-family:'Courier New',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);border:1px solid var(--accent);padding:.15rem .5rem;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:.75rem;}
+.hero-sub{font-size:1.05rem;color:var(--muted);max-width:680px;}
+
+.main{max-width:960px;margin:0 auto;padding:2rem;}
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.75rem;}
+.sep{border:none;border-top:1px solid var(--border);margin:2.5rem 0;}
+
+/* FRAMEWORK */
+.framework-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+@media(max-width:640px){.framework-grid{grid-template-columns:1fr;}}
+.fw-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;}
+.fw-card h3{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem;}
+.fw-card p{font-size:.83rem;color:#374151;line-height:1.6;}
+
+/* LANDSCAPE TABLE */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:2rem;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;background:var(--surface);}
+th{text-align:left;padding:.7rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);border-bottom:1px solid var(--border);}
+td{padding:.7rem 1rem;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--paper);}
+.cat-label{font-weight:700;font-size:.82rem;}
+
+/* USE CASE CARDS */
+.uc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:2rem;overflow:hidden;}
+.uc-header{padding:1.4rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.uc-num{font-family:'Courier New',monospace;font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem;}
+.uc-title{font-size:1.1rem;font-weight:700;margin-bottom:.3rem;}
+.uc-desc{font-size:.85rem;color:var(--muted);max-width:560px;line-height:1.6;}
+.verdict-pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:.35rem .9rem;border-radius:99px;border:1px solid;white-space:nowrap;align-self:flex-start;}
+.vp-build{background:var(--build-bg);color:var(--build);border-color:var(--build-border);}
+.vp-buy{background:var(--buy-bg);color:var(--buy);border-color:var(--buy-border);}
+.vp-blend{background:var(--blend-bg);color:var(--blend);border-color:var(--blend-border);}
+
+.uc-body{padding:1.5rem 1.75rem;display:grid;gap:1.5rem;}
+.uc-section h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.6rem;}
+
+/* FIT TABLE */
+.fit-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.fit-table th{text-align:left;padding:.5rem .75rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);border-bottom:1px solid var(--border);}
+.fit-table td{padding:.55rem .75rem;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+.fit-table tr:last-child td{border-bottom:none;}
+.fit-high{color:var(--build);font-weight:700;}
+.fit-med{color:var(--blend);font-weight:700;}
+.fit-low{color:#6b7280;font-weight:700;}
+
+/* BENCHMARK TABLE */
+.bm-grid{display:grid;gap:.75rem;}
+.bm-block{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.bm-block-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:.5rem .75rem;background:var(--surface);border-bottom:1px solid var(--border);}
+.bm-rows{}
+.bm-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid var(--border);}
+.bm-row:last-child{border-bottom:none;}
+.bm-row.header .bm-cell{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--paper);}
+.bm-cell{padding:.45rem .75rem;font-size:.8rem;line-height:1.4;}
+.bm-cell:not(:last-child){border-right:1px solid var(--border);}
+.bm-metric{color:var(--ink);font-weight:600;}
+.bm-val-high{color:var(--build);font-weight:700;}
+.bm-val-med{color:var(--blend);font-weight:700;}
+.bm-val-low{color:var(--warn);font-weight:700;}
+.bm-note{font-size:.72rem;color:var(--muted);font-style:italic;}
+
+/* VERDICT BOX */
+.verdict-box{border-radius:var(--radius);border:1px solid;padding:1.1rem 1.25rem;}
+.verdict-box h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
+.verdict-box p{font-size:.85rem;line-height:1.65;}
+.vb-build{background:var(--build-bg);border-color:var(--build-border);color:var(--build);}
+.vb-build p{color:#166534;}
+.vb-buy{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.vb-buy p{color:#1e40af;}
+.vb-blend{background:var(--blend-bg);border-color:var(--blend-border);color:var(--blend);}
+.vb-blend p{color:#92400e;}
+
+/* CHIP */
+.chip{font-family:'Courier New',monospace;font-size:.75rem;background:var(--paper);border:1px solid var(--border);padding:.18rem .45rem;border-radius:4px;color:var(--ink);}
+
+/* RISK */
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;}
+@media(max-width:640px){.risk-grid{grid-template-columns:1fr;}}
+.risk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;}
+.risk-card.high{border-left:3px solid var(--accent);}
+.risk-card h4{font-size:.75rem;font-weight:700;margin-bottom:.35rem;}
+.risk-card p{font-size:.82rem;color:#374151;line-height:1.6;}
+.risk-tag{display:inline-block;font-size:.65rem;font-family:'Courier New',monospace;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.1rem .35rem;border-radius:3px;margin-bottom:.4rem;}
+.rt-high{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
+.rt-med{background:var(--blend-bg);color:var(--blend);border:1px solid var(--blend-border);}
+
+/* SUMMARY */
+.summary-table{width:100%;border-collapse:collapse;font-size:.85rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.summary-table th{text-align:left;padding:.8rem 1.1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);border-bottom:1px solid var(--border);}
+.summary-table td{padding:.8rem 1.1rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.summary-table tr:last-child td{border-bottom:none;}
+.summary-table tr:hover td{background:var(--paper);}
+
+footer{border-top:1px solid var(--border);text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);}
+footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://insights.elevatenow.tech" class="nav-brand">ElevateNow</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-series">DocIntel Series</span>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Decision Matrix</a>
+    <a href="pipelines.html" class="nav-link">Pipeline Playbooks</a>
+    <a href="recommendations.html" class="nav-link active">Recommendations</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Solution Recommendations · Leadership Brief</div>
+  <h1>DocIntel<br>Solution Recommendations</h1>
+  <p class="hero-sub">Buy, Build, or Blend — prescriptive recommendations for four high-priority insurance document intelligence use cases, with accuracy benchmarks, product landscape assessment, and risk summary.</p>
+</div>
+
+<div class="main">
+
+  <!-- FRAMEWORK -->
+  <p class="section-label">Evaluation Framework</p>
+  <div class="framework-grid">
+    <div class="fw-card">
+      <h3>Accuracy Fit</h3>
+      <p>Does the solution match the extraction complexity and document type? Can it meet production accuracy thresholds on the carrier's actual document mix?</p>
+    </div>
+    <div class="fw-card">
+      <h3>Posture Compliance</h3>
+      <p>Can the solution operate within the carrier's data sovereignty constraints? Posture B (no PHI to cloud) disqualifies most vendor LLM and vector database options.</p>
+    </div>
+    <div class="fw-card">
+      <h3>Control &amp; Auditability</h3>
+      <p>Can every output be traced, audited, and governed? Eligibility decisions and coverage determinations require a full decision trace — not just an answer.</p>
+    </div>
+  </div>
+
+  <!-- LANDSCAPE -->
+  <p class="section-label">Product Landscape</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Key Players</th>
+          <th>Strength</th>
+          <th>Limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="cat-label">IDP Providers</span></td>
+          <td>Hyperscience, ABBYY, Reducto, Unstructured.io</td>
+          <td>Pre-built document automation, good accuracy out of box, fast to production</td>
+          <td>Expensive at scale, generic (not insurance-specific), Posture A only, vendor lock-in</td>
+        </tr>
+        <tr>
+          <td><span class="cat-label">Insurtech</span></td>
+          <td>Cytora, Indico Data, Planck, Archipelago, Tractable</td>
+          <td>Insurance-trained models, ACORD-aware, domain-specific ontologies</td>
+          <td>Narrow scope, point solutions only, high per-transaction cost, Posture A only</td>
+        </tr>
+        <tr>
+          <td><span class="cat-label">Hyperscalers</span></td>
+          <td>Azure AI Document Intelligence, AWS Textract, Google Document AI</td>
+          <td>Scale, reliability, integrated cloud stack, broadest capability range</td>
+          <td>Data leaves carrier (Posture A only), per-page pricing, general-purpose not insurance-tuned</td>
+        </tr>
+        <tr>
+          <td><span class="cat-label">Open Source</span></td>
+          <td>pdfplumber, Tesseract 5, spaCy, Docling, Llama 3.3 70B, Qdrant</td>
+          <td>No data egress, carrier-controlled, Posture B/C compatible, no per-transaction cost</td>
+          <td>Engineering investment required, no pre-built insurance models, ongoing maintenance</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="sep">
+
+  <!-- UC1 -->
+  <div class="uc-card">
+    <div class="uc-header">
+      <div>
+        <div class="uc-num">Use Case 01</div>
+        <div class="uc-title">Mailroom Straight-Through Processing</div>
+        <div class="uc-desc">Automated intake, document type and subtype classification, metadata indexing, and routing of inbound commercial submissions and claims documents.</div>
+      </div>
+      <span class="verdict-pill vp-blend">Blend</span>
+    </div>
+    <div class="uc-body">
+
+      <div class="uc-section">
+        <h4>Product Category Fit</h4>
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Category</th><th>Fit</th><th>Rationale</th></tr></thead>
+            <tbody>
+              <tr><td>IDP Providers</td><td class="fit-med">Partial</td><td>Good for scan/OCR path. Overkill and expensive for classification — ACORD form numbers don't need an IDP.</td></tr>
+              <tr><td>Insurtech</td><td class="fit-med">Partial</td><td>Cytora and Indico have submission classification capability. Viable but narrow scope and high cost per transaction.</td></tr>
+              <tr><td>Hyperscalers</td><td class="fit-high">Good</td><td>Azure Form Recognizer handles the scan/OCR path well. Per-page cost is justified for this specific stage only. Posture A.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Strong</td><td>Rules-based classifier is the correct tool — ACORD form numbers are deterministic. pdfplumber + regex for digital metadata at zero marginal cost.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="uc-section">
+        <h4>Accuracy Benchmarks</h4>
+        <div class="bm-grid">
+          <div class="bm-block">
+            <div class="bm-block-label">STP Rate (end-to-end, no human touch)</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Document Condition</div>
+                <div class="bm-cell">Benchmark</div>
+                <div class="bm-cell">Driver of Variance</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Digital PDF (AcroForm)</div>
+                <div class="bm-cell bm-val-high">92 – 95%</div>
+                <div class="bm-cell bm-note">Multi-doc packages require splitting logic</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Mixed (digital + scan)</div>
+                <div class="bm-cell bm-val-high">85 – 90%</div>
+                <div class="bm-cell bm-note">Scan quality is primary variance driver</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Scan-heavy intake</div>
+                <div class="bm-cell bm-val-med">74 – 83%</div>
+                <div class="bm-cell bm-note">Fax-to-PDF degrades below 200 DPI threshold</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">Classification Accuracy</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Digital</div>
+                <div class="bm-cell">Scanned</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Document type (ACORD vs. loss run vs. SOV…)</div>
+                <div class="bm-cell bm-val-high">97 – 99%</div>
+                <div class="bm-cell bm-val-high">93 – 96%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Subtype (125 vs 140 vs 130, new vs renewal)</div>
+                <div class="bm-cell bm-val-high">95 – 98%</div>
+                <div class="bm-cell bm-val-med">89 – 94%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Metadata field accuracy (Cat 1)</div>
+                <div class="bm-cell bm-val-high">97 – 99%</div>
+                <div class="bm-cell bm-val-med">88 – 94%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Processing speed</div>
+                <div class="bm-cell bm-note">2 – 5 sec/doc</div>
+                <div class="bm-cell bm-note">8 – 15 sec/doc</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-box vb-blend">
+        <h4>Recommendation — Blend</h4>
+        <p><strong>Build</strong> the classification and routing logic — ACORD form numbers are deterministic, carrier routing rules are proprietary. This is the operational brain of the mailroom and must be carrier-owned. <strong>Buy</strong> Azure Form Recognizer for the scan/OCR path only. <strong>Open source</strong> (pdfplumber + regex) handles all digital PDF metadata extraction at zero marginal cost. Target: 85–90% STP rate within 90 days of go-live.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UC2 -->
+  <div class="uc-card">
+    <div class="uc-header">
+      <div>
+        <div class="uc-num">Use Case 02</div>
+        <div class="uc-title">Single ACORD / EMOD Extraction</div>
+        <div class="uc-desc">Deterministic structured data extraction from ACORD commercial application forms (125, 126, 130, 140) and workers' compensation experience modification worksheets. LLM-free by design.</div>
+      </div>
+      <span class="verdict-pill vp-build">Build</span>
+    </div>
+    <div class="uc-body">
+
+      <div class="uc-section">
+        <h4>Product Category Fit</h4>
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Category</th><th>Fit</th><th>Rationale</th></tr></thead>
+            <tbody>
+              <tr><td>IDP Providers</td><td class="fit-med">Partial</td><td>ABBYY and Hyperscience have ACORD form templates. Accurate but cost is difficult to justify — open source achieves equivalent accuracy on digital forms at zero marginal cost.</td></tr>
+              <tr><td>Insurtech</td><td class="fit-med">Partial</td><td>Indico has ACORD extraction. Point solution with limited flexibility for carrier-specific form variants. Per-transaction pricing adds up at volume.</td></tr>
+              <tr><td>Hyperscalers</td><td class="fit-med">Partial</td><td>Azure Form Recognizer with custom ACORD training. Right tool for the scan path; unnecessary for digital PDFs. Per-page cost at scale needs TCO analysis.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Correct tool</td><td>pdfplumber reads AcroForm fields directly from digital PDFs — no OCR, near-100% accuracy, zero marginal cost. EMOD table parsing is deterministic. No vendor justifiable for this use case.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="uc-section">
+        <h4>Accuracy Benchmarks</h4>
+        <div class="bm-grid">
+          <div class="bm-block">
+            <div class="bm-block-label">Field Extraction Accuracy (KV F1) by Document Condition</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Condition</div>
+                <div class="bm-cell">KV F1 / Completeness</div>
+                <div class="bm-cell">Run Variance</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Digital AcroForm PDF</div>
+                <div class="bm-cell bm-val-high">98 – 99.5%</div>
+                <div class="bm-cell bm-val-high">0% — deterministic</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Clean scan (≥ 300 DPI)</div>
+                <div class="bm-cell bm-val-high">93 – 97%</div>
+                <div class="bm-cell bm-val-high">&lt; 1%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Moderate scan (150–300 DPI)</div>
+                <div class="bm-cell bm-val-med">82 – 91%</div>
+                <div class="bm-cell bm-val-med">&lt; 2%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Degraded / fax (&lt; 150 DPI)</div>
+                <div class="bm-cell bm-val-low">65 – 80%</div>
+                <div class="bm-cell bm-val-med">&lt; 3%</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">Additional Metrics</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Benchmark</div>
+                <div class="bm-cell">Notes</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">EMOD table accuracy (digital)</div>
+                <div class="bm-cell bm-val-high">97 – 99%</div>
+                <div class="bm-cell bm-note">Deterministic column parsing</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">EMOD table accuracy (scanned)</div>
+                <div class="bm-cell bm-val-med">88 – 94%</div>
+                <div class="bm-cell bm-note">Table structure detection (Cat 5)</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">SIC → NAICS crosswalk</div>
+                <div class="bm-cell bm-val-high">96 – 99%</div>
+                <div class="bm-cell bm-note">Deterministic; crosswalk completeness is the variable</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Required field completeness (digital)</div>
+                <div class="bm-cell bm-val-high">97 – 99%</div>
+                <div class="bm-cell bm-note">Incomplete forms are a broker quality issue</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-box vb-build">
+        <h4>Recommendation — Build</h4>
+        <p><strong>Digital ACORD: pure Build</strong> — pdfplumber reads AcroForm fields at 98–99.5% accuracy with zero marginal cost. No vendor is justifiable. <strong>Scanned ACORD: selective Buy</strong> — Azure Form Recognizer for the scan path, or Docling (open source) if Posture B is required. <strong>EMOD: Build</strong> — deterministic table parsing, no LLM. The business case for buying IDP tooling on this use case is weak: the accuracy gap over open source on digital forms is negligible, while the cost gap is significant at volume.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UC3 -->
+  <div class="uc-card">
+    <div class="uc-header">
+      <div>
+        <div class="uc-num">Use Case 03</div>
+        <div class="uc-title">Context Extraction for Conversational GenAI — Claims</div>
+        <div class="uc-desc">Prepare heterogeneous claims file documents as structured, redacted, retrievable context for an adjuster-facing conversational AI. PHI present throughout. Posture B is non-negotiable.</div>
+      </div>
+      <span class="verdict-pill vp-build">Build</span>
+    </div>
+    <div class="uc-body">
+
+      <div class="uc-section">
+        <h4>Product Category Fit</h4>
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Category</th><th>Fit</th><th>Rationale</th></tr></thead>
+            <tbody>
+              <tr><td>IDP Providers</td><td class="fit-low">Weak</td><td>Handle extraction well but have no PHI-safe conversational AI layer. Incomplete solution. Data egress disqualifies them from the LLM stage.</td></tr>
+              <tr><td>Insurtech</td><td class="fit-low">Weak</td><td>Point solutions exist (Tractable for auto damage, Shift for fraud) but none provide end-to-end claims context extraction for conversational AI at Posture B.</td></tr>
+              <tr><td>Hyperscalers</td><td class="fit-low">Partial only</td><td>Extraction layer is viable. Cloud LLM is off the table — PHI cannot leave the carrier network. Half a solution at best.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Only viable path</td><td>Full Posture B stack available: spaCy + regex (redaction), Tesseract/pdfplumber (extraction), Qdrant local (vector store), Llama 3.3 70B via Ollama (local LLM). No vendor can compete on posture compliance here.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="uc-section">
+        <h4>Accuracy Benchmarks</h4>
+        <div class="bm-grid">
+          <div class="bm-block">
+            <div class="bm-block-label">Redaction Accuracy — Critical Gate (HIPAA)</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Benchmark</div>
+                <div class="bm-cell">Notes</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">PHI Recall (% of PHI caught)</div>
+                <div class="bm-cell bm-val-high">96 – 99%</div>
+                <div class="bm-cell bm-note">Recall is the critical metric — missing PHI is a HIPAA breach</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Redaction Precision</div>
+                <div class="bm-cell bm-val-high">93 – 97%</div>
+                <div class="bm-cell bm-note">Over-redaction is acceptable; under-redaction is not</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">Extraction &amp; Retrieval Accuracy</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Benchmark</div>
+                <div class="bm-cell">Notes</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Doc classification (per type in claim package)</div>
+                <div class="bm-cell bm-val-high">90 – 95%</div>
+                <div class="bm-cell bm-note">8–12 distinct doc types per claim file</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">FNOL structured field extraction (Cat 1)</div>
+                <div class="bm-cell bm-val-high">93 – 97%</div>
+                <div class="bm-cell bm-note">Date of loss, claim#, policy#, injuries</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Narrative OCR character error rate (Cat 3)</div>
+                <div class="bm-cell bm-val-high">3 – 8% CER</div>
+                <div class="bm-cell bm-note">Clean scans; 8–15% CER on degraded</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Retrieval Precision@3 (insurance chunking)</div>
+                <div class="bm-cell bm-val-high">72 – 82%</div>
+                <div class="bm-cell bm-note">Requires insurance-specific chunking — not generic text splitters</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">Generation Quality — Why Governance is Mandatory</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Without Governance</div>
+                <div class="bm-cell">With Governed Prompts + Grounding</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Hallucination rate</div>
+                <div class="bm-cell bm-val-low">15 – 25%</div>
+                <div class="bm-cell bm-val-high">3 – 8%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Source attribution accuracy</div>
+                <div class="bm-cell bm-val-low">Not available</div>
+                <div class="bm-cell bm-val-high">85 – 92%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-box vb-build">
+        <h4>Recommendation — Build</h4>
+        <p>Posture B eliminates vendor LLM and cloud vector database options — this use case must be built. <strong>Redaction</strong> (spaCy + regex) is non-negotiable as the first pipeline stage. <strong>Type-aware extraction</strong> must be built with insurance-specific schemas per document type — generic IDP tooling produces inadequate output for claims content. <strong>Chunking</strong> must be insurance-specific — generic text splitters cut across section boundaries and degrade retrieval quality. <strong>LLM generation</strong>: Llama 3.3 70B via Ollama within carrier VPC. Only viable buy candidate: Azure Form Recognizer for handwritten content on specific document sub-types. Infrastructure requirement: 2× A100 80GB GPU for the local LLM.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UC4 -->
+  <div class="uc-card">
+    <div class="uc-header">
+      <div>
+        <div class="uc-num">Use Case 04</div>
+        <div class="uc-title">UW Documentation Context Extraction + Summarization</div>
+        <div class="uc-desc">Extract and structure multi-document commercial submissions, run deterministic eligibility gates, and produce a governed underwriting summary with exposure analysis and decision trace.</div>
+      </div>
+      <span class="verdict-pill vp-blend">Blend</span>
+    </div>
+    <div class="uc-body">
+
+      <div class="uc-section">
+        <h4>Product Category Fit</h4>
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Category</th><th>Fit</th><th>Rationale</th></tr></thead>
+            <tbody>
+              <tr><td>IDP Providers</td><td class="fit-high">Good (extraction layer)</td><td>Reducto and Hyperscience handle multi-document submission packages well. Good buy candidate for the extraction layer specifically.</td></tr>
+              <tr><td>Insurtech</td><td class="fit-med">Additive</td><td>Cytora (submission intelligence) and Planck (business profile enrichment) add value as point additions to the pipeline — not end-to-end solutions.</td></tr>
+              <tr><td>Hyperscalers</td><td class="fit-high">Strong (Posture A)</td><td>Azure Document Intelligence + Azure OpenAI (Claude via Azure or GPT-4) is a coherent Posture A stack. Reliable, integrated, production-grade.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Strong (rules + governance)</td><td>GKR eligibility rules engine and GKR output governance must be carrier-built. Cloud LLM (Claude, GPT-4) preferred over local LLM for summarization quality at Posture A.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="uc-section">
+        <h4>Accuracy Benchmarks</h4>
+        <div class="bm-grid">
+          <div class="bm-block">
+            <div class="bm-block-label">Extraction Accuracy by Document Type</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Document Type</div>
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Benchmark</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">ACORD application (digital)</div>
+                <div class="bm-cell bm-note">KV F1</div>
+                <div class="bm-cell bm-val-high">97 – 99%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Loss run (table extraction)</div>
+                <div class="bm-cell bm-note">KV F1</div>
+                <div class="bm-cell bm-val-high">91 – 96%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">SOV — COPE fields</div>
+                <div class="bm-cell bm-note">KV F1</div>
+                <div class="bm-cell bm-val-high">88 – 94%</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Inspection report narrative</div>
+                <div class="bm-cell bm-note">CER</div>
+                <div class="bm-cell bm-val-high">4 – 8%</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">GKR Eligibility Gate Accuracy (vs. experienced UW decision)</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Gate</div>
+                <div class="bm-cell">Accuracy</div>
+                <div class="bm-cell">Notes</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Gate 1 — Hard Exclusions</div>
+                <div class="bm-cell bm-val-high">99%+</div>
+                <div class="bm-cell bm-note">Deterministic SIC → exclusion matrix</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Gate 2 — Vertical Appetite</div>
+                <div class="bm-cell bm-val-high">94 – 97%</div>
+                <div class="bm-cell bm-note">Governed appetite chunks</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Gate 3 — Operations Exclusion</div>
+                <div class="bm-cell bm-val-high">91 – 95%</div>
+                <div class="bm-cell bm-note">Keyword match on business description</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Combined eligibility vs. human UW</div>
+                <div class="bm-cell bm-val-high">93 – 96%</div>
+                <div class="bm-cell bm-note">CONDITIONAL cases have highest disagreement rate</div>
+              </div>
+            </div>
+          </div>
+          <div class="bm-block">
+            <div class="bm-block-label">Summarization Quality</div>
+            <div class="bm-rows">
+              <div class="bm-row header">
+                <div class="bm-cell">Metric</div>
+                <div class="bm-cell">Benchmark</div>
+                <div class="bm-cell">Notes</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Exposure flag recall (material exposures identified)</div>
+                <div class="bm-cell bm-val-high">78 – 88%</div>
+                <div class="bm-cell bm-note">Against UW-CP-001 9-pattern framework</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Summary hallucination rate (governed)</div>
+                <div class="bm-cell bm-val-high">3 – 7%</div>
+                <div class="bm-cell bm-note">With governed prompts + grounded context</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">Chunk citation accuracy</div>
+                <div class="bm-cell bm-val-high">88 – 94%</div>
+                <div class="bm-cell bm-note">% of assertions traceable to a source chunk</div>
+              </div>
+              <div class="bm-row">
+                <div class="bm-cell bm-metric">End-to-end (submission → UW-ready summary)</div>
+                <div class="bm-cell bm-val-med">75 – 85%</div>
+                <div class="bm-cell bm-note">Full pipeline; SOV and inspection doc quality drives lower bound</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-box vb-blend">
+        <h4>Recommendation — Blend</h4>
+        <p><strong>Buy</strong> the extraction layer — Azure Document Intelligence or an IDP provider (Reducto/Hyperscience) for multi-document submission packages. <strong>Build</strong> the GKR eligibility rules engine — this is carrier-specific, deterministic, and must never be outsourced; it is the trust anchor of every underwriting decision. <strong>Buy</strong> Claude or GPT-4 (via Azure OpenAI or Anthropic API) for exposure interrogation and summarization — Posture A allows cloud LLM and frontier models significantly outperform local alternatives for nuanced exposure analysis. <strong>Build</strong> the output governance layer — GKR format, decision trace, chunk citations. Every assertion in the underwriting summary must trace to a governed source.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- POSTURE DETAILS -->
+  <p class="section-label">Data Posture — Per Use Case</p>
+  <div style="display:grid;gap:1rem;margin-bottom:2rem;">
+
+    <div class="uc-card">
+      <div class="uc-header" style="padding:1.1rem 1.5rem;">
+        <div>
+          <div class="uc-num">Use Case 01</div>
+          <div class="uc-title" style="font-size:.95rem;">Mailroom STP — Posture A (commercial) · Posture B (claims intake)</div>
+        </div>
+        <span class="verdict-pill" style="background:var(--paper);border:1px solid var(--border);color:var(--muted);font-size:.7rem;padding:.2rem .6rem;font-weight:700;border-radius:99px;">Split Posture</span>
+      </div>
+      <div class="uc-body" style="padding:1.1rem 1.5rem;gap:1rem;">
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Document Stream</th><th>Posture</th><th>Implication</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Commercial submissions (ACORD apps, loss runs, SOVs)</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--build);">A — Cloud-safe</td>
+                <td>Azure Form Recognizer, cloud classification APIs, and managed OCR services are permissible. No PHI present in standard commercial submissions.</td>
+              </tr>
+              <tr>
+                <td>Claims intake (FNOL, IA reports, medical attachments, police reports)</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--blend);">B — No PHI to cloud</td>
+                <td>PHI present from intake. Cloud OCR and classification APIs prohibited for this stream. Tesseract/PaddleOCR (T1) must handle the scan path. Rules-based classifier only — no LLM escalation via cloud API.</td>
+              </tr>
+              <tr>
+                <td>Mixed packages (submission with medical loss history attached)</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--warn);">B — treat as B</td>
+                <td>When posture is ambiguous, default to B. Build posture tagging into the classification step so downstream stages inherit the correct constraint automatically.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius);padding:.85rem 1rem;">
+          <p style="font-size:.82rem;color:var(--warn);font-weight:700;margin-bottom:.25rem;">Key design requirement</p>
+          <p style="font-size:.82rem;color:#374151;">The mailroom pipeline must tag each document with its posture at classification time. Every downstream stage (OCR vendor selection, metadata extraction method, routing destination) must inherit and enforce that posture tag. A single mis-tagged PHI document processed through a Posture A path is a compliance incident.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="uc-card">
+      <div class="uc-header" style="padding:1.1rem 1.5rem;">
+        <div>
+          <div class="uc-num">Use Case 02</div>
+          <div class="uc-title" style="font-size:.95rem;">ACORD / EMOD Extraction — Posture A</div>
+        </div>
+        <span class="verdict-pill" style="background:var(--build-bg);border:1px solid var(--build-border);color:var(--build);font-size:.7rem;padding:.2rem .6rem;font-weight:700;border-radius:99px;">Posture A</span>
+      </div>
+      <div class="uc-body" style="padding:1.1rem 1.5rem;gap:1rem;">
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Data Element</th><th>PHI / PII?</th><th>Posture Impact</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Named insured, FEIN, address</td>
+                <td>PII — business-level</td>
+                <td>Business PII — not PHI. Posture A permissible for standard commercial applications. Review carrier DPA with cloud vendors.</td>
+              </tr>
+              <tr>
+                <td>SIC code, revenue, employee count, limits</td>
+                <td>Commercially sensitive</td>
+                <td>Commercially sensitive but not regulated PII. Posture A permissible. Apply non-Chinese LLM policy as default if any LLM is used.</td>
+              </tr>
+              <tr>
+                <td>EMOD loss detail (individual claim amounts)</td>
+                <td>Potentially PII</td>
+                <td>EMOD worksheets list aggregate loss data by year — generally not individually identifiable. If claimant-level detail is included, treat as Posture B and use local extraction only.</td>
+              </tr>
+              <tr>
+                <td>WC individual claimant loss detail</td>
+                <td style="color:var(--warn);font-weight:700;">PHI if medical</td>
+                <td>If the EMOD worksheet includes individual injury/medical detail, the entire document flips to Posture B. Use pdfplumber (local) — no cloud vendor contact.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);font-style:italic;">Note: ACORD extraction is deterministic (no LLM) so posture is primarily relevant to the scan-path OCR vendor selection. pdfplumber on digital PDFs has zero posture exposure — it runs locally with no network calls.</p>
+      </div>
+    </div>
+
+    <div class="uc-card">
+      <div class="uc-header" style="padding:1.1rem 1.5rem;">
+        <div>
+          <div class="uc-num">Use Case 03</div>
+          <div class="uc-title" style="font-size:.95rem;">Claims ConvAI — Posture B (non-negotiable)</div>
+        </div>
+        <span class="verdict-pill" style="background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);font-size:.7rem;padding:.2rem .6rem;font-weight:700;border-radius:99px;">Posture B — Hard Requirement</span>
+      </div>
+      <div class="uc-body" style="padding:1.1rem 1.5rem;gap:1rem;">
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Document Type</th><th>PHI Category</th><th>Posture Requirement</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>FNOL form</td>
+                <td>Claimant name, DOB, contact details</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--blend);">B — No PHI to cloud</td>
+              </tr>
+              <tr>
+                <td>Police report</td>
+                <td>Claimant/witness identities, addresses</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--blend);">B — No PHI to cloud</td>
+              </tr>
+              <tr>
+                <td>IA / Independent Adjuster report</td>
+                <td>Property owner PII, damage assessment</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--blend);">B — No PHI to cloud</td>
+              </tr>
+              <tr>
+                <td>Medical records (WC / auto BI)</td>
+                <td style="color:var(--warn);font-weight:700;">HIPAA PHI — highest sensitivity</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--warn);">B mandatory — HIPAA</td>
+              </tr>
+              <tr>
+                <td>Adjuster notes</td>
+                <td>Claimant references, coverage discussion</td>
+                <td style="font-family:'Courier New',monospace;font-weight:700;color:var(--blend);">B — No PHI to cloud</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div style="background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius);padding:.85rem 1rem;">
+            <p style="font-size:.78rem;font-weight:700;color:var(--warn);margin-bottom:.3rem;">What Posture B prohibits</p>
+            <p style="font-size:.82rem;color:#374151;">Cloud LLM APIs (OpenAI, Anthropic, Azure OpenAI, Google Vertex) · Cloud vector databases (Pinecone, Weaviate Cloud, Azure AI Search) · Any managed service where document content leaves the carrier network perimeter.</p>
+          </div>
+          <div style="background:var(--build-bg);border:1px solid var(--build-border);border-radius:var(--radius);padding:.85rem 1rem;">
+            <p style="font-size:.78rem;font-weight:700;color:var(--build);margin-bottom:.3rem;">What Posture B permits</p>
+            <p style="font-size:.82rem;color:#374151;">Ollama + Llama 3.3 70B (local, carrier VPC) · Qdrant or Chroma (local vector store) · Tesseract 5 / PaddleOCR (local OCR) · spaCy NER (local) · pdfplumber (local).</p>
+          </div>
+        </div>
+        <div style="background:var(--paper);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:.85rem 1rem;">
+          <p style="font-size:.82rem;color:#374151;"><strong>Infrastructure implication:</strong> Posture B requires GPU infrastructure within the carrier VPC for the local LLM. Minimum: 2× NVIDIA A100 80GB (or equivalent) for Llama 3.3 70B inference. This is a procurement and lead-time consideration — plan 8–12 weeks for GPU acquisition and VPC deployment before committing to a delivery date.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="uc-card">
+      <div class="uc-header" style="padding:1.1rem 1.5rem;">
+        <div>
+          <div class="uc-num">Use Case 04</div>
+          <div class="uc-title" style="font-size:.95rem;">UW Documentation + Summarization — Posture A (with exceptions)</div>
+        </div>
+        <span class="verdict-pill" style="background:var(--buy-bg);border:1px solid var(--buy-border);color:var(--buy);font-size:.7rem;padding:.2rem .6rem;font-weight:700;border-radius:99px;">Posture A (verify per account)</span>
+      </div>
+      <div class="uc-body" style="padding:1.1rem 1.5rem;gap:1rem;">
+        <div class="tbl-wrap" style="margin-bottom:0;">
+          <table class="fit-table">
+            <thead><tr><th>Document Type</th><th>Typical Posture</th><th>Exception Condition</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>ACORD commercial application</td>
+                <td style="font-family:'Courier New',monospace;color:var(--build);font-weight:700;">A</td>
+                <td>Standard. Flips to B if WC application includes individual injury history with claimant detail.</td>
+              </tr>
+              <tr>
+                <td>Commercial loss run</td>
+                <td style="font-family:'Courier New',monospace;color:var(--build);font-weight:700;">A</td>
+                <td>Typically aggregate data. Flips to B if loss run includes claimant names, injury descriptions, or medical costs at individual claim level.</td>
+              </tr>
+              <tr>
+                <td>Statement of Values (SOV)</td>
+                <td style="font-family:'Courier New',monospace;color:var(--build);font-weight:700;">A</td>
+                <td>COPE data — no PII. Posture A always.</td>
+              </tr>
+              <tr>
+                <td>Property inspection report</td>
+                <td style="font-family:'Courier New',monospace;color:var(--build);font-weight:700;">A</td>
+                <td>Property data — no PII. Posture A always.</td>
+              </tr>
+              <tr>
+                <td>WC submission with loss detail</td>
+                <td style="font-family:'Courier New',monospace;color:var(--blend);font-weight:700;">B (if claimant detail)</td>
+                <td>WC loss runs with individual claimant injury/medical detail flip the entire submission to Posture B. LLM summarization must use T4 local model.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;">
+          <p style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:.3rem;">Practical recommendation</p>
+          <p style="font-size:.82rem;color:#374151;">Commercial GL, Property, and E&O submissions are cleanly Posture A — enable cloud LLM (Claude, GPT-4) for the summarization layer without restriction. WC and auto BI submissions should be evaluated per account: if the loss run contains claimant-level medical detail, route that submission through the Posture B pipeline (local LLM, no cloud vendor contact). Build the routing decision into the classification step rather than making it a manual underwriter judgment.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RISKS -->
+  <p class="section-label">Risk Summary</p>
+  <div class="risk-grid">
+    <div class="risk-card high">
+      <span class="risk-tag rt-high">High</span>
+      <h4>Posture Creep</h4>
+      <p>Vendors default to Posture A. A single PHI document in a submission package can breach compliance if cloud processing is enabled without posture tagging. Build posture classification into the pipeline from day one.</p>
+    </div>
+    <div class="risk-card high">
+      <span class="risk-tag rt-high">High</span>
+      <h4>Hallucination Without Governance</h4>
+      <p>Ungoverned LLM outputs have 15–25% hallucination rates on insurance content. Without governed prompts, grounding context, and decision traces, LLM outputs are not auditable for underwriting or claims decisions.</p>
+    </div>
+    <div class="risk-card high">
+      <span class="risk-tag rt-high">High</span>
+      <h4>Vendor Lock-in (IDP / Insurtech)</h4>
+      <p>IDP and insurtech vendors train on your document corpus. Switching cost after 12+ months of production use is significant. Define exit criteria and data portability requirements before signing.</p>
+    </div>
+    <div class="risk-card">
+      <span class="risk-tag rt-med">Medium</span>
+      <h4>Accuracy Cliff on Degraded Scans</h4>
+      <p>Extraction accuracy drops sharply below 300 DPI. Fax-to-PDF intake routinely produces sub-150 DPI documents. Carrier must publish minimum quality standards to brokers and build a rescan request workflow.</p>
+    </div>
+    <div class="risk-card">
+      <span class="risk-tag rt-med">Medium</span>
+      <h4>Per-Page Cost at Scale</h4>
+      <p>Hyperscaler and IDP per-page pricing becomes expensive above ~50,000 pages/month. Fixed infrastructure cost of a self-hosted build is lower above that threshold. Run TCO analysis before committing to managed services at volume.</p>
+    </div>
+    <div class="risk-card">
+      <span class="risk-tag rt-med">Medium</span>
+      <h4>LLM Provider Geopolitical Risk</h4>
+      <p>Models from Chinese-origin companies (Qwen, DeepSeek, ERNIE) are subject to China's National Intelligence Law. Routing sensitive commercial or claims data through these models creates geopolitical and governance risk. Apply a non-Chinese LLM policy as a default.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- SUMMARY -->
+  <p class="section-label">Summary Recommendation</p>
+  <div class="tbl-wrap">
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Use Case</th>
+          <th>Verdict</th>
+          <th>Posture</th>
+          <th>Key Accuracy Threshold</th>
+          <th>One-Line Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;">Mailroom STP</td>
+          <td><span class="verdict-pill vp-blend" style="font-size:.7rem;padding:.2rem .6rem;">Blend</span></td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">A / B</td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">85–90% STP rate</td>
+          <td style="font-size:.83rem;color:#374151;">Build classification rules; buy OCR for the scan path only.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">ACORD / EMOD</td>
+          <td><span class="verdict-pill vp-build" style="font-size:.7rem;padding:.2rem .6rem;">Build</span></td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">A</td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">≥ 97% KV F1 (digital)</td>
+          <td style="font-size:.83rem;color:#374151;">Digital AcroForm needs no vendor; scan path is the only buy candidate.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">Claims ConvAI</td>
+          <td><span class="verdict-pill vp-build" style="font-size:.7rem;padding:.2rem .6rem;">Build</span></td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">B</td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">≥ 97% PHI recall · ≤ 8% hallucination</td>
+          <td style="font-size:.83rem;color:#374151;">Posture B eliminates all vendor LLM and vector DB options.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">UW Documentation</td>
+          <td><span class="verdict-pill vp-blend" style="font-size:.7rem;padding:.2rem .6rem;">Blend</span></td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">A</td>
+          <td style="font-family:'Courier New',monospace;font-size:.8rem;">≥ 93% gate accuracy · ≤ 7% hallucination</td>
+          <td style="font-size:.83rem;color:#374151;">Buy extraction + cloud LLM; build eligibility rules and governance layer.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  ElevateNow DocIntel Series &nbsp;·&nbsp; <a href="index.html">Decision Matrix</a> &nbsp;·&nbsp; <a href="pipelines.html">Pipeline Playbooks</a> &nbsp;·&nbsp; <a href="https://insights.elevatenow.tech">insights.elevatenow.tech</a>
+</footer>
+
+</body>
+</html>
