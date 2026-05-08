@@ -141,6 +141,7 @@ footer a{color:var(--muted);}
     <a href="index.html" class="nav-link">Decision Matrix</a>
     <a href="pipelines.html" class="nav-link">Pipeline Playbooks</a>
     <a href="recommendations.html" class="nav-link active">Recommendations</a>
+    <a href="whitepaper.html" class="nav-link">White Paper</a>
   </div>
 </nav>
 
@@ -213,7 +214,7 @@ footer a{color:var(--muted);}
   <hr class="sep">
 
   <!-- UC1 -->
-  <div class="uc-card">
+  <div class="uc-card" id="uc1">
     <div class="uc-header">
       <div>
         <div class="uc-num">Use Case 01</div>
@@ -309,7 +310,7 @@ footer a{color:var(--muted);}
   </div>
 
   <!-- UC2 -->
-  <div class="uc-card">
+  <div class="uc-card" id="uc2">
     <div class="uc-header">
       <div>
         <div class="uc-num">Use Case 02</div>
@@ -410,7 +411,7 @@ footer a{color:var(--muted);}
   </div>
 
   <!-- UC3 -->
-  <div class="uc-card">
+  <div class="uc-card" id="uc3">
     <div class="uc-header">
       <div>
         <div class="uc-num">Use Case 03</div>
@@ -429,7 +430,7 @@ footer a{color:var(--muted);}
             <tbody>
               <tr><td>IDP Providers</td><td class="fit-low">Weak</td><td>Handle extraction well but have no PHI-safe conversational AI layer. Incomplete solution. Data egress disqualifies them from the LLM stage.</td></tr>
               <tr><td>Insurtech</td><td class="fit-low">Weak</td><td>Point solutions exist (Tractable for auto damage, Shift for fraud) but none provide end-to-end claims context extraction for conversational AI at Posture B.</td></tr>
-              <tr><td>Hyperscalers</td><td class="fit-low">Partial only</td><td>Extraction layer is viable. Cloud LLM is off the table — PHI cannot leave the carrier network. Half a solution at best.</td></tr>
+              <tr><td>Hyperscalers</td><td class="fit-med">Partial</td><td>Extraction layer is viable. Cloud LLM is off the table — PHI cannot leave the carrier network. Half a solution at best.</td></tr>
               <tr><td>Open Source</td><td class="fit-high">Only viable path</td><td>Full Posture B stack available: spaCy + regex (redaction), Tesseract/pdfplumber (extraction), Qdrant local (vector store), Llama 3.3 70B via Ollama (local LLM). No vendor can compete on posture compliance here.</td></tr>
             </tbody>
           </table>
@@ -521,12 +522,12 @@ footer a{color:var(--muted);}
   </div>
 
   <!-- UC4 -->
-  <div class="uc-card">
+  <div class="uc-card" id="uc4">
     <div class="uc-header">
       <div>
         <div class="uc-num">Use Case 04</div>
-        <div class="uc-title">UW Documentation Context Extraction + Summarization</div>
-        <div class="uc-desc">Extract and structure multi-document commercial submissions, run deterministic eligibility gates, and produce a governed underwriting summary with exposure analysis and decision trace.</div>
+        <div class="uc-title">UW Documentation — Goal-Oriented Workflow Automation</div>
+        <div class="uc-desc">A sequenced, outcome-driven pipeline — not autonomous agents — that extracts multi-document commercial submissions, runs deterministic eligibility gates (93–96% accuracy vs. experienced underwriter judgment), and produces a governed, auditable underwriting summary. Every stage has a defined goal and a measurable outcome.</div>
       </div>
       <span class="verdict-pill vp-blend">Blend</span>
     </div>
@@ -541,7 +542,7 @@ footer a{color:var(--muted);}
               <tr><td>IDP Providers</td><td class="fit-high">Good (extraction layer)</td><td>Reducto and Hyperscience handle multi-document submission packages well. Good buy candidate for the extraction layer specifically.</td></tr>
               <tr><td>Insurtech</td><td class="fit-med">Additive</td><td>Cytora (submission intelligence) and Planck (business profile enrichment) add value as point additions to the pipeline — not end-to-end solutions.</td></tr>
               <tr><td>Hyperscalers</td><td class="fit-high">Strong (Posture A)</td><td>Azure Document Intelligence + Azure OpenAI (Claude via Azure or GPT-4) is a coherent Posture A stack. Reliable, integrated, production-grade.</td></tr>
-              <tr><td>Open Source</td><td class="fit-high">Strong (rules + governance)</td><td>Deterministic eligibility rules engine and output governance layer must be carrier-built. Cloud LLM (Claude, GPT-4) preferred over local LLM for summarization quality at Posture A.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Strong (rules + governance)</td><td>Deterministic eligibility rules engine and output governance layer must be carrier-built using open-source components. Summarization uses a cloud LLM — a separate Posture A buy decision layered on top of the open-source rules stack.</td></tr>
             </tbody>
           </table>
         </div>
@@ -621,7 +622,7 @@ footer a{color:var(--muted);}
               <div class="bm-row">
                 <div class="bm-cell bm-metric">Exposure flag recall (material exposures identified)</div>
                 <div class="bm-cell bm-val-high">78 – 88%</div>
-                <div class="bm-cell bm-note">Against UW-CP-001 9-pattern framework</div>
+                <div class="bm-cell bm-note">Against structured 9-pattern exposure interrogation framework</div>
               </div>
               <div class="bm-row">
                 <div class="bm-cell bm-metric">Summary hallucination rate (governed)</div>
@@ -645,7 +646,12 @@ footer a{color:var(--muted);}
 
       <div class="verdict-box vb-blend">
         <h4>Recommendation — Blend</h4>
-        <p><strong>Buy</strong> the extraction layer — Azure Document Intelligence or an IDP provider (Reducto/Hyperscience) for multi-document submission packages. <strong>Build</strong> the eligibility rules engine — this is carrier-specific, deterministic, and must never be outsourced; it is the trust anchor of every underwriting decision. <strong>Buy</strong> Claude or GPT-4 (via Azure OpenAI or Anthropic API) for exposure interrogation and summarization — Posture A allows cloud LLM and frontier models significantly outperform local alternatives for nuanced exposure analysis. <strong>Build</strong> the output governance layer — structured decision trace, chunk citations, confidence scoring. Every assertion in the underwriting summary must trace to a governed source.</p>
+        <p><strong>Buy</strong> the extraction layer — Azure Document Intelligence or an IDP provider (Reducto/Hyperscience) for multi-document submission packages. <strong>Build</strong> the eligibility rules engine — carrier-specific, deterministic, never outsourced; the trust anchor of every underwriting decision, validated at 93–96% combined gate accuracy against experienced underwriter judgment. <strong>Buy</strong> Claude or GPT-4 (via Azure OpenAI or Anthropic API) for exposure interrogation and summarization — Posture A allows cloud LLM and frontier models significantly outperform local alternatives for nuanced exposure analysis. <strong>Build</strong> the governance layer — and treat it as a compliance deliverable, not an accuracy feature. Structured decision traces with chunk citations and confidence scoring are the technical foundation for NAIC model evaluation requirements. Build it once; it serves every regulatory audit.</p>
+      </div>
+
+      <div style="background:var(--buy-bg);border:1px solid var(--buy-border);border-left:3px solid #1e40af;border-radius:0 var(--radius) var(--radius) 0;padding:.9rem 1.1rem;margin-top:.5rem;">
+        <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--buy);margin-bottom:.35rem;">NAIC Model Bulletin on AI (2023) — Why the Governance Layer Is Not Optional</p>
+        <p style="font-size:.82rem;color:#374151;line-height:1.7;">State regulators now expect carriers using AI in underwriting to maintain <strong>model cards, validation reports, bias analyses, and decision traceability</strong> — on demand, per filing, per examination. A governance layer that records what rules fired, which source chunks grounded each assertion, and what confidence was assigned to each gate decision is the direct technical response to that requirement. The 93–96% gate accuracy benchmark is the validation metric regulators will ask for. Building this layer proactively positions the carrier ahead of enforcement — not in response to it.</p>
       </div>
 
     </div>
@@ -796,7 +802,7 @@ footer a{color:var(--muted);}
       <div class="uc-header" style="padding:1.1rem 1.5rem;">
         <div>
           <div class="uc-num">Use Case 04</div>
-          <div class="uc-title" style="font-size:.95rem;">UW Documentation + Summarization — Posture A (with exceptions)</div>
+          <div class="uc-title" style="font-size:.95rem;">UW Goal-Oriented Workflow Automation — Posture A (with exceptions)</div>
         </div>
         <span class="verdict-pill" style="background:var(--buy-bg);border:1px solid var(--buy-border);color:var(--buy);font-size:.7rem;padding:.2rem .6rem;font-weight:700;border-radius:99px;">Posture A (verify per account)</span>
       </div>
@@ -915,7 +921,7 @@ footer a{color:var(--muted);}
           <td style="font-size:.83rem;color:#374151;">Posture B eliminates all vendor LLM and vector DB options.</td>
         </tr>
         <tr>
-          <td style="font-weight:700;">UW Documentation</td>
+          <td style="font-weight:700;">UW Workflow Automation</td>
           <td><span class="verdict-pill vp-blend" style="font-size:.7rem;padding:.2rem .6rem;">Blend</span></td>
           <td style="font-family:'Courier New',monospace;font-size:.8rem;">A</td>
           <td style="font-family:'Courier New',monospace;font-size:.8rem;">≥ 93% gate accuracy · ≤ 7% hallucination</td>

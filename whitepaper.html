@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insurance Document Intelligence — Industry Perspective · ElevateNow</title>
+<style>
+:root {
+  --ink: #1c1917;
+  --paper: #faf9f7;
+  --surface: #ffffff;
+  --accent: #c0392b;
+  --border: #e7e2da;
+  --muted: #78716c;
+  --radius: 6px;
+  --build: #166534; --build-bg: #f0fdf4; --build-border: #86efac;
+  --buy: #1e40af;  --buy-bg: #eff6ff;  --buy-border: #93c5fd;
+  --blend: #92400e; --blend-bg: #fffbeb; --blend-border: #fcd34d;
+  --warn: #7f1d1d; --warn-bg: #fff1f2; --warn-border: #fca5a5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Georgia','Times New Roman',serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:16px;}
+a{color:var(--accent);}
+
+/* NAV */
+nav{border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;background:var(--surface);}
+.nav-brand{font-size:.9rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-sep{color:var(--border);}
+.nav-series{font-size:.8rem;color:var(--muted);font-family:'Courier New',monospace;}
+.nav-links{margin-left:auto;display:flex;gap:1.5rem;flex-wrap:wrap;}
+.nav-link{font-size:.8rem;color:var(--muted);text-decoration:none;font-family:'Courier New',monospace;}
+.nav-link:hover{color:var(--accent);}
+.nav-link.active{color:var(--accent);}
+
+/* HERO */
+.hero{max-width:800px;margin:0 auto;padding:3.5rem 2rem 2.5rem;border-bottom:1px solid var(--border);}
+.hero-tag{display:inline-block;font-family:'Courier New',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);border:1px solid var(--accent);padding:.15rem .5rem;border-radius:2px;margin-bottom:.75rem;}
+.hero-meta{font-family:'Courier New',monospace;font-size:.75rem;color:var(--muted);margin-bottom:1.1rem;display:flex;gap:1.5rem;flex-wrap:wrap;}
+.hero h1{font-size:2.3rem;font-weight:700;line-height:1.2;margin-bottom:.85rem;}
+.hero-sub{font-size:1.02rem;color:var(--muted);line-height:1.75;max-width:700px;}
+
+/* ABSTRACT */
+.abstract{max-width:800px;margin:2rem auto 0;padding:0 2rem;}
+.abstract-inner{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:1.25rem 1.5rem;}
+.abstract-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;font-family:'Courier New',monospace;}
+.abstract-inner p{font-size:.88rem;line-height:1.8;color:#374151;}
+.abstract-inner p+p{margin-top:.7rem;}
+
+/* MAIN */
+.main{max-width:800px;margin:0 auto;padding:2.5rem 2rem;}
+.section-num{font-family:'Courier New',monospace;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.3rem;}
+.section-title{font-size:1.45rem;font-weight:700;margin-bottom:.6rem;line-height:1.25;}
+.section-intro{font-size:.9rem;color:#374151;line-height:1.8;margin-bottom:1.5rem;}
+.sep{border:none;border-top:1px solid var(--border);margin:3rem 0;}
+
+/* THEME GRID */
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.5rem;}
+@media(max-width:640px){.theme-grid{grid-template-columns:1fr;}}
+.theme-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;}
+.theme-card.wide{grid-column:span 2;}
+@media(max-width:640px){.theme-card.wide{grid-column:span 1;}}
+.theme-n{font-family:'Courier New',monospace;font-size:.67rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem;}
+.theme-card h3{font-size:.88rem;font-weight:700;margin-bottom:.4rem;}
+.theme-card p{font-size:.82rem;color:#374151;line-height:1.65;}
+
+/* COMPARISON */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1rem;}
+@media(max-width:680px){.compare-grid{grid-template-columns:1fr;}}
+.compare-col{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+.compare-head{padding:.65rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;}
+.compare-head.right-head{background:var(--build-bg);color:var(--build);border-bottom:1px solid var(--build-border);}
+.compare-head.miss-head{background:var(--warn-bg);color:var(--warn);border-bottom:1px solid var(--warn-border);}
+.compare-list{padding:.5rem .85rem;background:var(--surface);}
+.compare-item{display:flex;gap:.6rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid var(--border);font-size:.82rem;line-height:1.6;color:#374151;}
+.compare-item:last-child{border-bottom:none;}
+.ci-icon{flex-shrink:0;font-size:.78rem;font-weight:700;margin-top:.15rem;font-family:'Courier New',monospace;}
+.ci-ok{color:var(--build);}
+.ci-no{color:var(--warn);}
+
+/* RISK */
+.risk-stack{display:grid;gap:1rem;margin-bottom:1rem;}
+.risk-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.risk-block-head{padding:.75rem 1.25rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid var(--border);background:var(--paper);}
+.risk-tag{font-family:'Courier New',monospace;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.15rem .4rem;border-radius:3px;}
+.rt-high{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
+.risk-block-head h3{font-size:.9rem;font-weight:700;}
+.risk-body{padding:1rem 1.25rem;font-size:.85rem;line-height:1.75;color:#374151;}
+.risk-body p+p{margin-top:.65rem;}
+.risk-stat{font-family:'Courier New',monospace;font-size:.79rem;font-weight:700;color:var(--accent);background:var(--paper);border:1px solid var(--border);padding:.18rem .5rem;border-radius:4px;display:inline;}
+
+/* POSITION */
+.position-stack{display:grid;gap:.85rem;margin-bottom:1rem;}
+.pullquote{border-left:3px solid var(--accent);padding:.95rem 1.3rem;background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;border:1px solid var(--border);border-left-width:3px;}
+.pullquote p{font-size:1rem;line-height:1.7;color:var(--ink);font-style:italic;}
+.pq-label{font-family:'Courier New',monospace;font-size:.7rem;color:var(--muted);margin-top:.45rem;font-style:normal;}
+
+/* UC SUMMARY */
+.uc-sum-grid{display:grid;gap:1rem;margin-bottom:1rem;}
+.uc-sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.4rem;display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap;}
+.uc-sum-left{flex:1;min-width:260px;}
+.uc-sum-num{font-family:'Courier New',monospace;font-size:.67rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem;}
+.uc-sum-title{font-size:.95rem;font-weight:700;margin-bottom:.35rem;}
+.uc-sum-rationale{font-size:.82rem;color:#374151;line-height:1.65;}
+.uc-sum-right{display:flex;flex-direction:column;align-items:flex-end;gap:.55rem;flex-shrink:0;}
+.verdict-pill{display:inline-flex;align-items:center;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:.3rem .8rem;border-radius:99px;border:1px solid;white-space:nowrap;}
+.vp-build{background:var(--build-bg);color:var(--build);border-color:var(--build-border);}
+.vp-buy{background:var(--buy-bg);color:var(--buy);border-color:var(--buy-border);}
+.vp-blend{background:var(--blend-bg);color:var(--blend);border-color:var(--blend-border);}
+.uc-link{font-family:'Courier New',monospace;font-size:.72rem;color:var(--accent);text-decoration:none;border:1px solid var(--accent);padding:.2rem .5rem;border-radius:3px;white-space:nowrap;}
+.uc-link:hover{background:var(--accent);color:#fff;}
+
+/* AGENDA */
+.agenda-grid{display:grid;gap:.85rem;margin-bottom:1rem;}
+.agenda-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;gap:1.1rem;align-items:flex-start;}
+.agenda-n{font-family:'Courier New',monospace;font-size:1.35rem;font-weight:700;color:var(--accent);flex-shrink:0;line-height:1;padding-top:.05rem;}
+.agenda-body h4{font-size:.87rem;font-weight:700;margin-bottom:.3rem;}
+.agenda-body p{font-size:.82rem;color:#374151;line-height:1.7;}
+
+footer{border-top:1px solid var(--border);text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);}
+footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://insights.elevatenow.tech" class="nav-brand">ElevateNow</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-series">DocIntel Series</span>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Decision Matrix</a>
+    <a href="pipelines.html" class="nav-link">Pipeline Playbooks</a>
+    <a href="recommendations.html" class="nav-link">Recommendations</a>
+    <a href="whitepaper.html" class="nav-link active">White Paper</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Industry Perspective · White Paper</div>
+  <div class="hero-meta">
+    <span>ElevateNow DocIntel Series</span>
+    <span>May 2026</span>
+    <span>Leadership &amp; Strategy</span>
+  </div>
+  <h1>Insurance Document Intelligence:<br>What the Market Gets Right,<br>What It Misses, and What Carriers Should Build</h1>
+  <p class="hero-sub">A practitioner's analysis of the extraction landscape, the structural gaps vendor solutions leave unaddressed, and prescriptive recommendations for four high-priority carrier workflows — grounded in accuracy benchmarks rather than architectural labels.</p>
+</div>
+
+<!-- ABSTRACT -->
+<div class="abstract">
+  <div class="abstract-inner">
+    <div class="abstract-label">Abstract</div>
+    <p>The insurance industry has made genuine progress in document extraction. OCR has matured. AcroForm reading is reliable at scale. Several IDP vendors have built insurance-specific training sets. The question has shifted from "can we read documents?" to "can we govern, trace, and audit what AI does with what we read — and can the chosen stack operate within our sovereignty and regulatory constraints?"</p>
+    <p>That shift exposes a structural gap. Most vendor investment has concentrated at the extraction layer — the front of the pipeline. The back of the pipeline — enrichment, eligibility determination, decision governance, and regulatory traceability — remains largely carrier-built or unbuilt. This paper presents ElevateNow's perspective on where the market stands, what it systematically misses, and where carrier investment should be directed in the near term.</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECTION I -->
+  <div class="section-num">Section I</div>
+  <div class="section-title">Five Structural Themes Reshaping Carrier Strategy</div>
+  <p class="section-intro">The document intelligence conversation in insurance has moved faster than most carrier technology roadmaps. These five themes define the terrain — and determine whether a vendor evaluation or internal build effort is asking the right questions.</p>
+
+  <div class="theme-grid">
+    <div class="theme-card">
+      <div class="theme-n">Theme 01</div>
+      <h3>From Extraction to Intelligence</h3>
+      <p>The field has moved from character recognition to semantic understanding, but most vendor benchmarks still measure the former. Extracting a NAICS code from an ACORD 125 is not the same as knowing what that code means for appetite, hard exclusions, and pricing implications. The intelligence gap is not closed by improving OCR accuracy — it requires an ontology layer that most vendor products do not include.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-n">Theme 02</div>
+      <h3>The Sovereignty Constraint</h3>
+      <p>Cloud-first vendor architecture conflicts with Posture B requirements in claims. Medical records, police reports, and independent adjuster reports contain PHI that cannot leave the carrier network perimeter. Most IDP, insurtech, and hyperscaler products were designed for Posture A. Posture B carriers face a structural capability gap that vendor roadmaps are not resolving at the pace compliance requires.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-n">Theme 03</div>
+      <h3>Governance as Regulatory Obligation</h3>
+      <p>The NAIC Model Bulletin on AI (2023) shifts model governance from aspirational practice to documented obligation. Carriers are accountable for model cards, validation reports, and decision traceability for AI-assisted underwriting decisions — regardless of whether the AI is vendor-built. The compliance surface created by an IDP or LLM vendor deployment is a carrier responsibility, not a vendor one.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-n">Theme 04</div>
+      <h3>The Accuracy Distribution Problem</h3>
+      <p>Vendor benchmarks measure best-case inputs. Production document intake includes 30–40% degraded or mixed-condition documents — fax-to-PDF conversions, multi-generation copies, heterogeneous submission packages. Accuracy claims measured on clean digital PDFs do not translate to scan-heavy intake. The accuracy that matters for underwriting is performance on the tail of the distribution, not the mean.</p>
+    </div>
+    <div class="theme-card wide">
+      <div class="theme-n">Theme 05</div>
+      <h3>Goal-Oriented Workflow Automation, Not Autonomous Agents</h3>
+      <p>"AI agents" is the current industry headline. In the insurance context, goal-oriented workflow automation is a more precise and more defensible frame: sequenced pipelines where each stage has a defined input, a deterministic or governed output, and a measurable accuracy threshold. Regulated decisions — eligibility, coverage determination, claims adjudication — cannot be delegated to probabilistic systems without a deterministic gate layer sitting in front of them. The 93–96% gate accuracy achievable with a governed eligibility rules engine is the outcome that matters. The architectural label applied to the pipeline is not.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION II -->
+  <div class="section-num">Section II</div>
+  <div class="section-title">What the Market Gets Right — and Misses</div>
+  <p class="section-intro">Vendor capability has advanced meaningfully. The honest assessment is that it has advanced most in the parts of the problem that are easiest to benchmark and most legible in a demo environment. The harder parts — sovereignty compliance, insurance semantics, decision governance, regulatory traceability — remain systematically underserved.</p>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="compare-head right-head">What Solutions Get Right</div>
+      <div class="compare-list">
+        <div class="compare-item">
+          <span class="ci-icon ci-ok">✓</span>
+          <span><strong>Extraction fidelity on structured inputs.</strong> Hyperscience, ABBYY, and Azure Form Recognizer deliver genuine accuracy on well-formed ACORD forms. AcroForm reading via pdfplumber approaches 99% on digital PDFs. This part of the problem is largely solved for Posture A workflows.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-ok">✓</span>
+          <span><strong>Speed to production for Posture A.</strong> Leading IDP vendors have pre-built ACORD templates and onboarding playbooks that materially reduce integration effort for carriers whose sovereignty question is already resolved.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-ok">✓</span>
+          <span><strong>Scale economics at volume.</strong> Cloud per-page pricing and managed infrastructure lower the capital barrier for carriers processing high document volumes under Posture A — no hardware investment, no OCR licensing.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-ok">✓</span>
+          <span><strong>Improving general-purpose reasoning.</strong> Foundation models (GPT-4, Claude) have materially advanced document understanding for unstructured narrative content — inspection reports, adjuster notes, loss descriptions — where rule-based extraction was previously the bottleneck.</span>
+        </div>
+      </div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-head miss-head">What Solutions Systematically Miss</div>
+      <div class="compare-list">
+        <div class="compare-item">
+          <span class="ci-icon ci-no">✗</span>
+          <span><strong>A viable PHI-safe LLM path.</strong> No major IDP or hyperscaler vendor offers a production-ready on-premises LLM. Posture B carriers — every claims-handling carrier — must build their own local LLM stack or accept a permanent capability gap on document reasoning tasks.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-no">✗</span>
+          <span><strong>Insurance semantic depth.</strong> Extracting a NAICS code is not the same as knowing its appetite profile, exclusion matrix, or EMOD thresholds. The ontology layer that translates extracted data into insurance decisions does not exist in any vendor product. It must be built.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-no">✗</span>
+          <span><strong>Decision traceability by default.</strong> Vendor outputs are answers, not decision traces. Insurance decisions require a structured audit record: which rule fired, which source chunk grounded the conclusion, what confidence was assigned at each stage. No IDP or LLM vendor generates this as a standard output.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-no">✗</span>
+          <span><strong>Accuracy on the tail that matters.</strong> Sub-300 DPI scans, fax-to-PDF artifacts, and heterogeneous multi-document packages represent 30–40% of real carrier intake. These are the documents most likely to require human review — and the ones where vendor accuracy claims diverge most sharply from production performance.</span>
+        </div>
+        <div class="compare-item">
+          <span class="ci-icon ci-no">✗</span>
+          <span><strong>Regulatory audit readiness.</strong> NAIC model governance obligations — model cards, validation reports, bias analysis, drift monitoring — are carrier deliverables, not vendor deliverables. A carrier deploying a vendor IDP or LLM product inherits the compliance surface without inheriting the compliance tooling.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION III -->
+  <div class="section-num">Section III</div>
+  <div class="section-title">Three Risks That Don't Appear in Vendor Demos</div>
+  <p class="section-intro">Vendor evaluations run on prepared document sets, in Posture A environments, without production governance requirements. The risks below surface only after deployment — when remediation is expensive.</p>
+
+  <div class="risk-stack">
+
+    <div class="risk-block">
+      <div class="risk-block-head">
+        <span class="risk-tag rt-high">High</span>
+        <h3>Posture Creep</h3>
+      </div>
+      <div class="risk-body">
+        <p>Vendors default to Posture A architecture. Carrier document intake, however, is not uniformly Posture A. Commercial submissions are generally cloud-safe. Claims intake is Posture B from the first notification of loss — PHI is present in FNOLs, police reports, IA reports, and medical attachments. The risk is not a deliberate decision to process PHI through a cloud API; it is an incomplete classification system that mis-tags a medical attachment in a submission package and routes it through a cloud OCR service before the error surfaces.</p>
+        <p>A single mis-tagged PHI document processed through a cloud vendor is a compliance incident. The structural mitigation — posture classification at document intake, inherited by every downstream stage — is an engineering decision that must be made at pipeline design time. No vendor product enforces this posture inheritance for you. Designing it in after the first audit finding is not an option.</p>
+      </div>
+    </div>
+
+    <div class="risk-block">
+      <div class="risk-block-head">
+        <span class="risk-tag rt-high">High</span>
+        <h3>The Governance Deficit</h3>
+      </div>
+      <div class="risk-body">
+        <p>Ungoverned LLM outputs carry a <span class="risk-stat">15–25%</span> hallucination rate on insurance document content. An ungoverned LLM summarizing a commercial loss run can confidently assert a loss ratio, claim count, or claimant detail that does not exist in the source document — with the same fluency it uses for accurate statements. Underwriters will not catch every hallucination. The governed alternative — grounded context, structured prompts, explicit source attribution — reduces hallucination to <span class="risk-stat">3–8%</span>. The governance layer is the mechanism by which LLM output becomes auditable enough to use in a regulated decision.</p>
+        <p>The audit question that follows an adverse claim or underwriting decision — "what did the system read and what did it conclude?" — cannot be answered without a decision trace. A vendor extraction output is not a decision trace. It is a starting point. Carriers who deploy LLM-powered document intelligence without this layer are not making underwriting decisions with AI — they are making underwriting decisions they cannot audit.</p>
+      </div>
+    </div>
+
+    <div class="risk-block">
+      <div class="risk-block-head">
+        <span class="risk-tag rt-high">High</span>
+        <h3>NAIC Compliance Exposure</h3>
+      </div>
+      <div class="risk-body">
+        <p>The NAIC Model Bulletin on AI (2023) establishes that carriers are accountable for AI-assisted underwriting decisions regardless of whether the system is internally built or vendor-provided. The required deliverables — model cards documenting system purpose, training data, and limitations; validation reports with accuracy metrics on the carrier's own document population; bias analysis across protected characteristics; drift monitoring with defined thresholds — are not vendor deliverables. They are carrier obligations triggered by the deployment of any AI system in a regulated decision workflow.</p>
+        <p>Most carriers evaluating IDP and LLM vendors in 2026 are not accounting for the compliance surface those vendors create. A carrier deploying an IDP provider for ACORD extraction and a cloud LLM for UW summarization has created two model governance obligations that need to be documented, monitored, and available for regulatory examination. Carriers building governance layers as part of their document intelligence architecture are satisfying this obligation simultaneously. Those buying point solutions without it are accumulating regulatory exposure proportional to the volume of AI-assisted decisions they are making.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION IV -->
+  <div class="section-num">Section IV</div>
+  <div class="section-title">Our Position</div>
+  <p class="section-intro">These are not observations hedged for diplomatic neutrality. They are assessments derived from the architecture of the problem, the current state of the market, and the regulatory direction of travel.</p>
+
+  <div class="position-stack">
+
+    <div class="pullquote">
+      <p>"The extraction problem is largely solved. The governance problem is not. Carrier investment decisions in 2026 that treat extraction capability as the primary differentiator are solving last year's problem."</p>
+      <div class="pq-label">On where to invest</div>
+    </div>
+
+    <div class="pullquote">
+      <p>"The Buy/Build question is not binary. It is a component decision, applied independently to each stage of each pipeline. The correct answer for scan-path OCR is not the correct answer for eligibility rules. The correct answer for eligibility rules is not the correct answer for summarization. Carriers who apply a single verdict to an entire use case will over-buy in some stages and under-invest in the ones that create the most differentiation."</p>
+      <div class="pq-label">On the Buy/Build framework</div>
+    </div>
+
+    <div class="pullquote">
+      <p>"Posture B is not a niche requirement. It is the compliance floor for every carrier that handles claims documents. Claims intake contains PHI from the first notification of loss. A document intelligence strategy that does not include a PHI-safe pipeline is not a complete strategy — it is a strategy for commercial underwriting only."</p>
+      <div class="pq-label">On data sovereignty</div>
+    </div>
+
+    <div class="pullquote">
+      <p>"A 97% accuracy figure in a vendor benchmark and a 97% accuracy figure validated against your own document corpus are different statements. Only one of them governs your SLA, your underwriter review rate, and your regulatory exposure. Never commit to a production accuracy threshold based on a vendor-supplied number."</p>
+      <div class="pq-label">On accuracy claims</div>
+    </div>
+
+    <div class="pullquote">
+      <p>"The governance layer is the most carrier-specific component in any document intelligence pipeline. It encodes appetite rules, eligibility logic, and coverage determinations that are proprietary to the carrier. It is also the highest-value component from a compliance standpoint — it is simultaneously the mechanism of accurate decisions and the audit record of those decisions. It should never be outsourced, and it will never be built by a vendor."</p>
+      <div class="pq-label">On what carriers must build</div>
+    </div>
+
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION V -->
+  <div class="section-num">Section V</div>
+  <div class="section-title">Use Case Recommendations</div>
+  <p class="section-intro">Four high-priority carrier workflows, each with a prescriptive Buy / Build / Blend verdict grounded in the framework above. Recommendations are component-level, not use-case-level — each stage carries its own verdict. Full benchmarks, product landscape assessment, and posture detail are available in the linked brief.</p>
+
+  <div class="uc-sum-grid">
+
+    <div class="uc-sum-card">
+      <div class="uc-sum-left">
+        <div class="uc-sum-num">Use Case 01</div>
+        <div class="uc-sum-title">Mailroom Straight-Through Processing</div>
+        <div class="uc-sum-rationale">Classification and routing logic must be carrier-built — ACORD form numbers are deterministic and carrier routing rules are proprietary. Buy OCR for the scan path only (Azure Form Recognizer at Posture A; Docling or PaddleOCR at Posture B). Open-source pdfplumber handles all digital PDF metadata at zero marginal cost. Critical design requirement: posture classification must be applied at document intake and inherited by every downstream stage. A mis-tagged PHI document routed through a cloud OCR service is a compliance incident, not an extraction error. Target: 85–90% STP rate.</div>
+      </div>
+      <div class="uc-sum-right">
+        <span class="verdict-pill vp-blend">Blend</span>
+        <a href="recommendations.html#uc1" class="uc-link">Full brief →</a>
+      </div>
+    </div>
+
+    <div class="uc-sum-card">
+      <div class="uc-sum-left">
+        <div class="uc-sum-num">Use Case 02</div>
+        <div class="uc-sum-title">Single ACORD / EMOD Extraction</div>
+        <div class="uc-sum-rationale">Digital AcroForm extraction is a pure Build decision — pdfplumber reads fields at 98–99.5% KV F1 with zero marginal cost and zero run variance. No vendor is justifiable for digital forms at any price point. The scan path is the only buy candidate (Azure Form Recognizer or Docling for Posture B requirements). EMOD table parsing is deterministic. No LLM is required at any stage. The business case for buying IDP tooling on this use case is weak: the accuracy gap over open source on digital forms is negligible; the cost gap at volume is not.</div>
+      </div>
+      <div class="uc-sum-right">
+        <span class="verdict-pill vp-build">Build</span>
+        <a href="recommendations.html#uc2" class="uc-link">Full brief →</a>
+      </div>
+    </div>
+
+    <div class="uc-sum-card">
+      <div class="uc-sum-left">
+        <div class="uc-sum-num">Use Case 03</div>
+        <div class="uc-sum-title">Context Extraction for Conversational GenAI — Claims</div>
+        <div class="uc-sum-rationale">Posture B eliminates all vendor LLM and cloud vector database options — the entire pipeline must be built. PHI redaction via spaCy and regex is the mandatory first stage; recall must reach 96–99% before any content proceeds downstream. Insurance-specific chunking is required; generic text splitters cut across section boundaries and degrade retrieval Precision@3 by 15–20 percentage points. LLM generation via Llama 3.3 70B (Ollama, within carrier VPC) is the only viable path. Infrastructure lead-time: 8–12 weeks for 2× A100 80GB GPU procurement and VPC deployment.</div>
+      </div>
+      <div class="uc-sum-right">
+        <span class="verdict-pill vp-build">Build</span>
+        <a href="recommendations.html#uc3" class="uc-link">Full brief →</a>
+      </div>
+    </div>
+
+    <div class="uc-sum-card">
+      <div class="uc-sum-left">
+        <div class="uc-sum-num">Use Case 04</div>
+        <div class="uc-sum-title">UW Goal-Oriented Workflow Automation</div>
+        <div class="uc-sum-rationale">Buy the extraction layer (Azure Document Intelligence or IDP provider) for multi-document submission packages. Build the eligibility rules engine — carrier-specific, deterministic, validated at 93–96% combined gate accuracy against experienced underwriter judgment. This is the trust anchor of every underwriting decision and should never be outsourced. Buy cloud LLM (Claude, GPT-4 via Azure OpenAI) for exposure interrogation and summarization at Posture A. Build the governance layer as a NAIC compliance deliverable — not an accuracy feature. Structured decision traces with chunk citations and confidence scoring are the technical response to the model governance obligations the NAIC bulletin creates. Build it once; it serves every regulatory audit.</div>
+      </div>
+      <div class="uc-sum-right">
+        <span class="verdict-pill vp-blend">Blend</span>
+        <a href="recommendations.html#uc4" class="uc-link">Full brief →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION VI -->
+  <div class="section-num">Section VI</div>
+  <div class="section-title">The 90-Day Decision Agenda</div>
+  <p class="section-intro">Three decisions that should be resolved before any vendor contract is signed or build sprint is scoped — because each one changes the answer to every downstream question.</p>
+
+  <div class="agenda-grid">
+    <div class="agenda-item">
+      <div class="agenda-n">01</div>
+      <div class="agenda-body">
+        <h4>Classify your data posture by document stream — not by use case.</h4>
+        <p>A single commercial submission package can span Posture A (ACORD application, loss run) and Posture B (WC loss detail with individual claimant medical history). Posture must be classified at the document level, applied at intake, and inherited by every downstream stage. Build this decision into the pipeline architecture before writing any other code. A posture error discovered post-deployment is a compliance incident. There is no engineering patch that retroactively corrects PHI that has already transited a cloud API.</p>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="agenda-n">02</div>
+      <div class="agenda-body">
+        <h4>Define governance output requirements before evaluating vendors.</h4>
+        <p>Specify the decision trace format: which fields, what granularity, what citation structure. A vendor who cannot produce a structured decision trace — recording which rules fired, which source content grounded each assertion, and what confidence was assigned at each gate — cannot meet your compliance requirements regardless of extraction accuracy. Most vendors will not meet this specification out of the box. Knowing that before the procurement conversation changes the negotiation.</p>
+      </div>
+    </div>
+    <div class="agenda-item">
+      <div class="agenda-n">03</div>
+      <div class="agenda-body">
+        <h4>Run a stratified accuracy evaluation on your own documents before committing to any threshold.</h4>
+        <p>Build a test corpus of 200–300 documents stratified by condition: clean digital, clean scan (≥ 300 DPI), moderate scan (150–300 DPI), and degraded input (&lt; 150 DPI). Run every vendor candidate and every open-source alternative against it using a consistent evaluation harness. The vendor benchmark figure in the sales deck does not predict performance on your specific document mix, your broker quality distribution, or your form variant population. The corpus evaluation is the only number that should govern SLA commitments, build-vs-buy decisions, and underwriter review rate targets.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  ElevateNow DocIntel Series &nbsp;·&nbsp; <a href="index.html">Decision Matrix</a> &nbsp;·&nbsp; <a href="pipelines.html">Pipeline Playbooks</a> &nbsp;·&nbsp; <a href="recommendations.html">Recommendations</a> &nbsp;·&nbsp; <a href="https://insights.elevatenow.tech">insights.elevatenow.tech</a>
+</footer>
+
+</body>
+</html>
