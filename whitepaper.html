@@ -116,6 +116,34 @@ nav{border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-item
 .agenda-body h4{font-size:.87rem;font-weight:700;margin-bottom:.3rem;}
 .agenda-body p{font-size:.82rem;color:#374151;line-height:1.7;}
 
+/* POSTURE */
+.posture-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+@media(max-width:640px){.posture-grid{grid-template-columns:1fr;}}
+.posture-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;}
+.posture-card-a{border-top:3px solid var(--build);}
+.posture-card-b{border-top:3px solid var(--blend);}
+.posture-card-c{border-top:3px solid var(--muted);}
+.posture-badge{display:inline-block;font-family:'Courier New',monospace;font-size:.75rem;font-weight:700;padding:.2rem .55rem;border-radius:4px;margin-bottom:.45rem;}
+.pb-a{background:var(--build-bg);color:var(--build);border:1px solid var(--build-border);}
+.pb-b{background:var(--blend-bg);color:var(--blend);border:1px solid var(--blend-border);}
+.pb-c{background:var(--paper);color:var(--muted);border:1px solid var(--border);}
+.posture-card h3{font-size:.87rem;font-weight:700;margin-bottom:.35rem;}
+.posture-card p{font-size:.82rem;color:#374151;line-height:1.65;}
+.posture-tbl{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--surface);}
+.posture-tbl th{text-align:left;padding:.6rem .9rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);border-bottom:1px solid var(--border);}
+.posture-tbl td{padding:.6rem .9rem;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6;}
+.posture-tbl tr:last-child td{border-bottom:none;}
+.posture-tbl tr:hover td{background:var(--paper);}
+.pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;}
+@media(max-width:600px){.pp-grid{grid-template-columns:1fr;}}
+.pp-col{border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
+.pp-head{padding:.6rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);}
+.pp-prohibit .pp-head{background:var(--warn-bg);color:var(--warn);border-bottom-color:var(--warn-border);}
+.pp-permit .pp-head{background:var(--build-bg);color:var(--build);border-bottom-color:var(--build-border);}
+.pp-list{padding:.5rem .85rem;background:var(--surface);}
+.pp-item{font-size:.82rem;color:#374151;line-height:1.6;padding:.35rem 0;border-bottom:1px solid var(--border);}
+.pp-item:last-child{border-bottom:none;}
+
 footer{border-top:1px solid var(--border);text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);}
 footer a{color:var(--muted);}
 </style>
@@ -248,8 +276,103 @@ footer a{color:var(--muted);}
 
   <hr class="sep">
 
-  <!-- SECTION III -->
+  <!-- SECTION III — POSTURE -->
   <div class="section-num">Section III</div>
+  <div class="section-title">Data Posture — The Structural Constraint Every Carrier Must Resolve First</div>
+  <p class="section-intro">Data posture defines what a carrier can and cannot do with a document at each pipeline stage. It is determined by the regulatory sensitivity of the document's content — not by the use case, not by the workflow, and not by the vendor's architecture. Posture must be classified per document stream, tagged at intake, and enforced at every downstream stage. A classification made at the use-case level is too coarse and will produce compliance failures at the document level.</p>
+
+  <div class="posture-grid">
+    <div class="posture-card posture-card-a">
+      <div class="posture-badge pb-a">Posture A — Cloud-safe</div>
+      <h3>No PHI Present</h3>
+      <p>Standard commercial underwriting documents: ACORD applications, loss runs without individual claimant detail, statements of values, property inspection reports. All vendor services — cloud OCR, cloud LLM, cloud vector databases — are permissible. Per-page pricing and managed infrastructure are viable at scale.</p>
+    </div>
+    <div class="posture-card posture-card-b">
+      <div class="posture-badge pb-b">Posture B — No PHI to cloud</div>
+      <h3>PHI Present</h3>
+      <p>Medical records, police reports, IA reports, FNOL forms, WC loss detail with claimant injury history, adjuster notes with claimant references. All cloud AI services prohibited. OCR, LLM inference, and vector storage must operate entirely within the carrier VPC. No document content may transit any external API.</p>
+    </div>
+    <div class="posture-card posture-card-c">
+      <div class="posture-badge pb-c">Posture C — Air-gapped</div>
+      <h3>Highest Sensitivity</h3>
+      <p>All processing in a physically isolated environment with no external network connectivity. Reserved for highest-sensitivity carriers or specific regulatory environments. Not addressed in this paper's four use cases — all recommendations assume Posture A or B as the operative constraint.</p>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;">
+    <table class="posture-tbl">
+      <thead>
+        <tr>
+          <th>Use Case</th>
+          <th>Primary Posture</th>
+          <th>Exception / Flip Condition</th>
+          <th>Technology Implication</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;">UC1 — Mailroom STP</td>
+          <td><span class="posture-badge pb-a" style="font-size:.7rem;margin:0;">Split A / B</span></td>
+          <td>Commercial stream = A. Claims stream = B from FNOL forward. Mixed packages default to the most restrictive posture present.</td>
+          <td>Two parallel OCR paths required. Cloud OCR permissible for commercial only. Classification step must tag posture before any processing begins.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">UC2 — ACORD / EMOD</td>
+          <td><span class="posture-badge pb-a" style="font-size:.7rem;margin:0;">Posture A</span></td>
+          <td>Flips to B if WC EMOD worksheet includes individual claimant injury or medical cost detail at the record level.</td>
+          <td>pdfplumber (digital AcroForm) has zero posture exposure — local only, no network calls. Scan-path OCR vendor selection is the only posture decision point.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">UC3 — Claims ConvAI</td>
+          <td><span class="posture-badge pb-b" style="font-size:.7rem;margin:0;">Posture B — Hard</span></td>
+          <td>No exception. PHI is present across every document type in a claims file: FNOL, police report, IA report, medical records, adjuster notes.</td>
+          <td>Entire pipeline runs within carrier VPC. Local OCR (Tesseract/PaddleOCR), local LLM (Llama 3.3 70B via Ollama), local vector store (Qdrant). GPU procurement required — 8–12 week lead time.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;">UC4 — UW Workflow Automation</td>
+          <td><span class="posture-badge pb-a" style="font-size:.7rem;margin:0;">Posture A</span></td>
+          <td>Flips to B for WC submissions where the loss run includes claimant-level injury or medical detail. Route through local LLM path.</td>
+          <td>GL, Property, E&amp;O submissions: cloud LLM permissible. WC with claimant detail: local LLM only. Route decision must be made at classification — not as a manual underwriter judgment.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:var(--warn-bg);border:1px solid var(--warn-border);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:.9rem 1.1rem;margin-bottom:1.5rem;">
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);margin-bottom:.35rem;">The Split Posture Problem — UC1 Mailroom</p>
+    <p style="font-size:.83rem;color:#374151;line-height:1.75;">The mailroom handles commercial and claims intake simultaneously — and their posture requirements diverge. Commercial submissions are Posture A. Claims intake is Posture B from the first document received. A single package containing a commercial application and an attached medical loss history spans both postures. Engineering requirement: every document receives a posture tag at classification, before any processing decision is made. Downstream stages — OCR vendor selection, LLM routing, storage destination — read and enforce that tag. A mis-tagged PHI document processed through a cloud OCR service is a compliance incident regardless of intent.</p>
+  </div>
+
+  <div class="pp-grid">
+    <div class="pp-col pp-prohibit">
+      <div class="pp-head">What Posture B Prohibits</div>
+      <div class="pp-list">
+        <div class="pp-item">Cloud LLM APIs — OpenAI, Anthropic (direct), Azure OpenAI, Google Vertex AI, AWS Bedrock</div>
+        <div class="pp-item">Cloud vector databases — Pinecone, Weaviate Cloud, Azure AI Search, Elastic Cloud</div>
+        <div class="pp-item">Cloud OCR and document AI — Azure Form Recognizer, AWS Textract, Google Document AI</div>
+        <div class="pp-item">Any managed service or observability pipeline where document content leaves the carrier network perimeter</div>
+      </div>
+    </div>
+    <div class="pp-col pp-permit">
+      <div class="pp-head">What Posture B Requires Building</div>
+      <div class="pp-list">
+        <div class="pp-item">Local OCR — Tesseract 5, PaddleOCR v4 (within VPC, no egress)</div>
+        <div class="pp-item">Local LLM — Llama 3.3 70B via Ollama; requires 2× NVIDIA A100 80GB (or equivalent) within carrier VPC</div>
+        <div class="pp-item">Local vector store — Qdrant or Chroma (self-hosted, carrier-controlled, no cloud sync)</div>
+        <div class="pp-item">Local NER and redaction — spaCy NER + compiled regex; PHI recall must reach 96–99% before content proceeds downstream</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--paper);border:1px solid var(--border);border-left:3px solid #1e40af;border-radius:0 var(--radius) var(--radius) 0;padding:.85rem 1.1rem;">
+    <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--buy);margin-bottom:.3rem;">Infrastructure Lead-Time — UC3 Claims ConvAI</p>
+    <p style="font-size:.83rem;color:#374151;line-height:1.75;">The Posture B requirement for claims ConvAI carries an infrastructure implication that is consistently underestimated at project inception. Llama 3.3 70B inference requires dedicated GPU hardware within the carrier VPC. Minimum: 2× NVIDIA A100 80GB. GPU procurement, VPC provisioning, and model deployment represent an 8–12 week lead time. Carriers who commit to a delivery date for claims ConvAI without accounting for this lead time will miss it. Flag this risk at project approval — not during sprint planning.</p>
+  </div>
+
+  <hr class="sep">
+
+  <!-- SECTION IV -->
+  <div class="section-num">Section IV</div>
   <div class="section-title">Three Risks That Don't Appear in Vendor Demos</div>
   <p class="section-intro">Vendor evaluations run on prepared document sets, in Posture A environments, without production governance requirements. The risks below surface only after deployment — when remediation is expensive.</p>
 
@@ -292,8 +415,8 @@ footer a{color:var(--muted);}
 
   <hr class="sep">
 
-  <!-- SECTION IV -->
-  <div class="section-num">Section IV</div>
+  <!-- SECTION V -->
+  <div class="section-num">Section V</div>
   <div class="section-title">Our Position</div>
   <p class="section-intro">These are not observations hedged for diplomatic neutrality. They are assessments derived from the architecture of the problem, the current state of the market, and the regulatory direction of travel.</p>
 
@@ -328,8 +451,8 @@ footer a{color:var(--muted);}
 
   <hr class="sep">
 
-  <!-- SECTION V -->
-  <div class="section-num">Section V</div>
+  <!-- SECTION VI -->
+  <div class="section-num">Section VI</div>
   <div class="section-title">Use Case Recommendations</div>
   <p class="section-intro">Four high-priority carrier workflows, each with a prescriptive Buy / Build / Blend verdict grounded in the framework above. Recommendations are component-level, not use-case-level — each stage carries its own verdict. Full benchmarks, product landscape assessment, and posture detail are available in the linked brief.</p>
 
@@ -387,8 +510,8 @@ footer a{color:var(--muted);}
 
   <hr class="sep">
 
-  <!-- SECTION VI -->
-  <div class="section-num">Section VI</div>
+  <!-- SECTION VII -->
+  <div class="section-num">Section VII</div>
   <div class="section-title">The 90-Day Decision Agenda</div>
   <p class="section-intro">Three decisions that should be resolved before any vendor contract is signed or build sprint is scoped — because each one changes the answer to every downstream question.</p>
 
