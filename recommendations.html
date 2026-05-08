@@ -541,7 +541,7 @@ footer a{color:var(--muted);}
               <tr><td>IDP Providers</td><td class="fit-high">Good (extraction layer)</td><td>Reducto and Hyperscience handle multi-document submission packages well. Good buy candidate for the extraction layer specifically.</td></tr>
               <tr><td>Insurtech</td><td class="fit-med">Additive</td><td>Cytora (submission intelligence) and Planck (business profile enrichment) add value as point additions to the pipeline — not end-to-end solutions.</td></tr>
               <tr><td>Hyperscalers</td><td class="fit-high">Strong (Posture A)</td><td>Azure Document Intelligence + Azure OpenAI (Claude via Azure or GPT-4) is a coherent Posture A stack. Reliable, integrated, production-grade.</td></tr>
-              <tr><td>Open Source</td><td class="fit-high">Strong (rules + governance)</td><td>GKR eligibility rules engine and GKR output governance must be carrier-built. Cloud LLM (Claude, GPT-4) preferred over local LLM for summarization quality at Posture A.</td></tr>
+              <tr><td>Open Source</td><td class="fit-high">Strong (rules + governance)</td><td>Deterministic eligibility rules engine and output governance layer must be carrier-built. Cloud LLM (Claude, GPT-4) preferred over local LLM for summarization quality at Posture A.</td></tr>
             </tbody>
           </table>
         </div>
@@ -581,7 +581,7 @@ footer a{color:var(--muted);}
             </div>
           </div>
           <div class="bm-block">
-            <div class="bm-block-label">GKR Eligibility Gate Accuracy (vs. experienced UW decision)</div>
+            <div class="bm-block-label">Eligibility Gate Accuracy (vs. experienced UW decision)</div>
             <div class="bm-rows">
               <div class="bm-row header">
                 <div class="bm-cell">Gate</div>
@@ -645,7 +645,7 @@ footer a{color:var(--muted);}
 
       <div class="verdict-box vb-blend">
         <h4>Recommendation — Blend</h4>
-        <p><strong>Buy</strong> the extraction layer — Azure Document Intelligence or an IDP provider (Reducto/Hyperscience) for multi-document submission packages. <strong>Build</strong> the GKR eligibility rules engine — this is carrier-specific, deterministic, and must never be outsourced; it is the trust anchor of every underwriting decision. <strong>Buy</strong> Claude or GPT-4 (via Azure OpenAI or Anthropic API) for exposure interrogation and summarization — Posture A allows cloud LLM and frontier models significantly outperform local alternatives for nuanced exposure analysis. <strong>Build</strong> the output governance layer — GKR format, decision trace, chunk citations. Every assertion in the underwriting summary must trace to a governed source.</p>
+        <p><strong>Buy</strong> the extraction layer — Azure Document Intelligence or an IDP provider (Reducto/Hyperscience) for multi-document submission packages. <strong>Build</strong> the eligibility rules engine — this is carrier-specific, deterministic, and must never be outsourced; it is the trust anchor of every underwriting decision. <strong>Buy</strong> Claude or GPT-4 (via Azure OpenAI or Anthropic API) for exposure interrogation and summarization — Posture A allows cloud LLM and frontier models significantly outperform local alternatives for nuanced exposure analysis. <strong>Build</strong> the output governance layer — structured decision trace, chunk citations, confidence scoring. Every assertion in the underwriting summary must trace to a governed source.</p>
       </div>
 
     </div>
