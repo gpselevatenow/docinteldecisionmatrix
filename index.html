@@ -330,10 +330,10 @@ function onTaskChange() {
     catSel.appendChild(o);
   });
   catDesc.textContent = task === 'extraction'
-    ? 'Five categories based on output type and LLM requirement.'
+    ? 'Six categories based on output type and LLM requirement.'
     : task === 'enrichment'
-    ? 'Five insurance domains requiring decision support beyond raw extraction.'
-    : 'Six pipeline capabilities that sit alongside extraction and enrichment.';
+    ? 'Six insurance domains requiring decision support beyond raw extraction.'
+    : 'Seven pipeline capabilities that sit alongside extraction and enrichment.';
   onCompute();
 }
 
